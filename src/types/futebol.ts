@@ -2,8 +2,8 @@ export interface Player {
   id: string
   number: number
   name: string
-  position: string
-  role: 'Titular' | 'Reserva' | 'Capitão' | 'Vice-capitão'
+  position: 'Goleiro' | 'Zagueiro' | 'Lateral Esquerdo' | 'Lateral Direito' | 'Meio-campista' | 'Atacante'
+  role: 'Goleiro Tradicional' | 'Goleiro-Líbero' | 'Zagueiro Central' | 'Zagueiro Construtor' | 'Líbero' | 'Lateral Defensivo' | 'Lateral Apoiador' | 'Lateral Construtor' | 'Ala' | 'Cabeça de Área' | 'Primeiro Volante' | 'Segundo Volante' | 'Meia Box-to-Box' | 'Meia Armador' | 'Meia Central' | 'Meia-atacante' | 'Meia de Ligação' | 'Ponta' | 'Extremo' | 'Ponta Invertido' | 'Segundo Atacante' | 'Centroavante' | 'Homem de Área' | 'Pivô' | 'Falso 9'
   isStarter?: boolean
   isCaptain?: boolean
   fieldPosition?: { x: number; y: number }
@@ -32,9 +32,14 @@ export interface GameAction {
   type: 'possession' | 'specific'
   teamId: string
   playerId?: string
+  playerIds?: string[] // Para ações que envolvem múltiplos jogadores
   zone: { row: number; col: number }
   timestamp: number
   actionName?: string
+  substitution?: {
+    playerOut: string
+    playerIn: string
+  }
 }
 
 export interface Match {
@@ -51,11 +56,12 @@ export interface Match {
 export interface ActionType {
   id: string
   name: string
-  requiresPlayer: boolean
+  requiresPlayer: boolean | 'multiple'
   icon: string
   counterAction?: string // ID da ação que deve ser registrada no time adversário
   reverseAction?: boolean // Se true, registra a ação no time adversário ao invés do time com posse
   changesPossession?: boolean // Se true, muda automaticamente a posse para o time adversário
+  requiresMultiplePlayers?: boolean // Para ações como substituição
 }
 
 export interface ZoneStats {
