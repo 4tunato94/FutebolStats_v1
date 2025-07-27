@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Edit, Trash, Upload, FileText, User } from 'lucide-react'
+import { Plus, Edit, Trash, Upload, FileText, User, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { useFutebolStore } from '@/stores/futebolStore'
 import { Team, Player } from '@/types/futebol'
 
@@ -87,8 +88,13 @@ export function PlayerManager({ team, onImportPlayers }: PlayerManagerProps) {
   }
 
   const handleDeletePlayer = (playerId: string) => {
-    const updatedPlayers = team.players.filter(p => p.id !== playerId)
-    updateTeam(team.id, { players: updatedPlayers })
+    updateTeam(team.id, { 
+      players: team.players.filter(p => p.id !== playerId)
+    })
+  }
+
+  const handleDeleteAllPlayers = () => {
+    updateTeam(team.id, { players: [] })
   }
 
   const handleImport = () => {
@@ -102,6 +108,28 @@ export function PlayerManager({ team, onImportPlayers }: PlayerManagerProps) {
       <div className="flex items-center justify-between">
         <h4 className="font-semibold">Elenco</h4>
         <div className="flex space-x-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={team.players.length === 0}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir todos os jogadores</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir todos os jogadores do {team.name}? Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAllPlayers} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Excluir Todos
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
           <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">

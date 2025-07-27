@@ -3,7 +3,10 @@ export interface Player {
   number: number
   name: string
   position: string
-  role: string
+  role: 'Titular' | 'Reserva' | 'Capitão' | 'Vice-capitão'
+  isStarter?: boolean
+  isCaptain?: boolean
+  fieldPosition?: { x: number; y: number }
 }
 
 export interface Team {
@@ -16,6 +19,12 @@ export interface Team {
     secondary: string
   }
   players: Player[]
+  formation?: string
+  tacticalSetup?: {
+    starters: string[]
+    captain: string | null
+    formation: string
+  }
 }
 
 export interface GameAction {

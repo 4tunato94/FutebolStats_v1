@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { Play, Users, ChevronRight } from 'lucide-react'
+import { Play, Users, ChevronRight, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { useFutebolStore } from '@/stores/futebolStore'
+import { TacticalSetup } from '@/components/TacticalSetup'
 import { cn } from '@/lib/utils'
 
 export function MatchSetup() {
   const { teams, startMatch } = useFutebolStore()
   const [teamAId, setTeamAId] = useState('')
   const [teamBId, setTeamBId] = useState('')
+  const [showTacticalSetup, setShowTacticalSetup] = useState(false)
 
   const handleStartMatch = () => {
     if (!teamAId || !teamBId) {
@@ -23,6 +25,20 @@ export function MatchSetup() {
     startMatch(teamAId, teamBId)
   }
 
+  const handleTacticalSetup = () => {
+    if (!teamAId || !teamBId) {
+      alert('Selecione ambos os times primeiro!')
+      return
+    }
+    if (teamAId === teamBId) {
+      alert('Selecione times diferentes!')
+      return
+    }
+    setShowTacticalSetup(true)
+  }
+
+  const selectedTeamA = teams.find(t => t.id === teamAId)
+  const selectedTeamB = teams.find(t => t.id === teamBId)
   if (teams.length < 2) {
     return (
       <div className="text-center py-12">
@@ -83,6 +99,52 @@ export function MatchSetup() {
         </div>
       </div>
 
+      {/* Configuração Tática */}
+      {teamAId && teamBId && teamAId !== teamBId && (
+        <div className="space-y-4">
+          <Button 
+            onClick={handleTacticalSetup}
+            variant="outline"
+            size="lg"
+            className="w-full h-16 rounded-2xl text-base touch-target"
+          >
+            <Settings className="h-5 w-5 mr-3" />
+            <span className="ios-text-fixed">Configurar Táticas</span>
+          </Button>
+          
+          {/* Resumo das configurações */}
+          <div className="grid grid-cols-2 gap-4">
+            {selectedTeamA && (
+              <div className="p-4 border rounded-2xl bg-muted/30">
+                <div className="flex items-center space-x-2 mb-2">
+                  <img src={selectedTeamA.logoUrl} alt={selectedTeamA.name} className="w-6 h-6" />
+                  <span className="font-semibold text-sm">{selectedTeamA.name}</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>Formação: {selectedTeamA.formation || 'Não definida'}</p>
+                  <p>Titulares: {selectedTeamA.players.filter(p => p.isStarter).length}/11</p>
+                  <p>Capitão: {selectedTeamA.players.find(p => p.isCaptain)?.name || 'Não definido'}</p>
+                </div>
+              </div>
+            )}
+            
+            {selectedTeamB && (
+              <div className="p-4 border rounded-2xl bg-muted/30">
+                <div className="flex items-center space-x-2 mb-2">
+                  <img src={selectedTeamB.logoUrl} alt={selectedTeamB.name} className="w-6 h-6" />
+                  <span className="font-semibold text-sm">{selectedTeamB.name}</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p>Formação: {selectedTeamB.formation || 'Não definida'}</p>
+                  <p>Titulares: {selectedTeamB.players.filter(p => p.isStarter).length}/11</p>
+                  <p>Capitão: {selectedTeamB.players.find(p => p.isCaptain)?.name || 'Não definido'}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <Button 
         onClick={handleStartMatch}
         size="lg"
@@ -98,6 +160,16 @@ export function MatchSetup() {
         <span className="ios-text-fixed">Iniciar Análise</span>
         <ChevronRight className="h-6 w-6 ml-3" />
       </Button>
+      
+      {/* Modal de Configuração Tática */}
+      {selectedTeamA && selectedTeamB && (
+        <TacticalSetup
+          isOpen={showTacticalSetup}
+          onClose={() => setShowTacticalSetup(false)}
+          teamA={selectedTeamA}
+          teamB={selectedTeamB}
+        />
+      )}
     </div>
   )
 }

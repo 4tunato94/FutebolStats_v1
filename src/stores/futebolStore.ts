@@ -74,9 +74,22 @@ export const useFutebolStore = create<FutebolState>()(
       })),
       
       updateTeam: (teamId, updates) => set((state) => ({
-        teams: state.teams.map(team => 
-          team.id === teamId ? { ...team, ...updates } : team
-        )
+        teams: state.teams.map(team => {
+          if (team.id === teamId) {
+            return { ...team, ...updates }
+          }
+          return team
+        }),
+        // Atualizar também o currentMatch se estiver ativo
+        currentMatch: state.currentMatch ? {
+          ...state.currentMatch,
+          teamA: state.currentMatch.teamA.id === teamId 
+            ? { ...state.currentMatch.teamA, ...updates }
+            : state.currentMatch.teamA,
+          teamB: state.currentMatch.teamB.id === teamId 
+            ? { ...state.currentMatch.teamB, ...updates }
+            : state.currentMatch.teamB
+        } : null
       })),
       
       deleteTeam: (teamId) => set((state) => ({
