@@ -1,13 +1,8 @@
 import { useEffect } from 'react';
 
-declare global {
-  interface Window {
-    frameworkReady?: () => void;
-  }
-}
-
 export function useFrameworkReady() {
   useEffect(() => {
-    window.frameworkReady?.()
-  })
+    // Framework ready hook for Expo
+    console.log('Framework ready');
+  }, []);
 }

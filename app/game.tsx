@@ -1,3 +1,4 @@
+import { Stack } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +10,15 @@ import FieldView from '../components/FieldView';
 const { width, height } = Dimensions.get('window');
 
 export default function GameScreen() {
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <GameContent />
+    </>
+  );
+}
+
+function GameContent() {
   const { 
     currentMatch, 
     endMatch, 

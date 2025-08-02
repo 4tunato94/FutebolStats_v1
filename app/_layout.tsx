@@ -5,10 +5,6 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 export default function RootLayout() {
   useFrameworkReady();
-  useEffect(() => {
-    // Framework initialization
-    console.log('App initialized');
-  }, []);
 
   return (
     <>
