@@ -372,7 +372,7 @@ export function IOSFieldView() {
       {/* Campo Principal */}
       <div className={cn(
         "flex-1 relative flex items-center justify-center",
-        isFullscreen && "w-screen h-screen p-2",
+        isFullscreen && "w-screen h-screen p-1",
         isSafariIPhone() && isFullscreen && isLandscape && "safari-landscape-field"
       )}>
         <FieldGrid isFullscreen={isFullscreen} />

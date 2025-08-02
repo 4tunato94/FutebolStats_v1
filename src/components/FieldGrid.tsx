@@ -86,8 +86,8 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
         className={cn(
           "absolute inset-0 bg-no-repeat",
           isFullscreen 
-            ? "bg-contain bg-center" 
-            : "bg-cover bg-center"
+            ? "bg-cover" 
+            : "bg-contain"
         )}
         style={{
           backgroundImage: 'url(/campov1-horizontal.png)'
@@ -97,14 +97,14 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
       {/* Overlay sutil para melhor contraste */}
       <div className={cn(
         "absolute inset-0",
-        isFullscreen ? "bg-black/5" : "bg-black/10"
+        isFullscreen ? "bg-black/10" : "bg-black/5"
       )} />
       
       {/* Grid de zonas 20x13 - ajustado para não recortar */}
       <div className={cn(
         "absolute grid grid-cols-20 grid-rows-13",
         isFullscreen 
-          ? "inset-4 md:inset-8 lg:inset-12" 
+          ? "inset-2 sm:inset-4 md:inset-6" 
           : "inset-2 md:inset-4"
       )}>
         {Array.from({ length: 260 }, (_, index) => {
@@ -127,7 +127,7 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
               {getZoneIntensity(row, col).total > 0 && (
                 <div className={cn(
                   "absolute bg-white rounded-full opacity-90 shadow-lg border border-gray-300",
-                  isFullscreen ? "top-1 right-1 w-3 h-3" : "top-0.5 right-0.5 w-2 h-2"
+                  isFullscreen ? "top-0.5 right-0.5 w-2 h-2" : "top-0.5 right-0.5 w-1.5 h-1.5"
                 )} />
               )}
             </button>

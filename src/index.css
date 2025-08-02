@@ -122,9 +122,11 @@ input, select, textarea {
   
   /* Field image optimization */
   .field-fullscreen-bg {
-    background-size: contain !important;
+    background-size: cover !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
+    width: 100% !important;
+    height: 100% !important;
   }
   
   /* Safari iPhone specific fullscreen */
@@ -140,10 +142,10 @@ input, select, textarea {
   }
   
   .safari-landscape-field {
-    transform: rotate(90deg) !important;
-    transform-origin: center center !important;
-    width: 100vh !important;
-    height: 100vw !important;
+    /* Otimizado para landscape no iPhone */
+    width: 100vw !important;
+    height: 100vh !important;
+    height: -webkit-fill-available !important;
   }
   
   /* Hide Safari UI elements */
@@ -152,6 +154,14 @@ input, select, textarea {
       /* Force landscape on iPhone */
       min-height: 100vh;
       min-height: -webkit-fill-available;
+      width: 100vw;
+      width: -webkit-fill-available;
+    }
+    
+    /* Campo em landscape otimizado */
+    .safari-landscape-field .field-grid {
+      background-size: cover !important;
+      background-position: center !important;
     }
   }
 }
