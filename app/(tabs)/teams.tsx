@@ -1,18 +1,22 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, CreditCard as Edit, Trash2, Users } from 'lucide-react-native';
+import { Plus, Edit, Trash2, Users, Image as ImageIcon } from 'lucide-react-native';
 import { useFutebolStore, Team, Player } from '../../stores/futebolStore';
+import ColorPicker from '../../components/ColorPicker';
+import ImagePicker from '../../components/ImagePicker';
 
 export default function TeamsScreen() {
-  const { teams, addTeam, updateTeam, deleteTeam, addPlayer, updatePlayer, deletePlayer } = useFutebolStore();
+  const { teams, addTeam, updateTeam, deleteTeam, addPlayer, addMultiplePlayers, updatePlayer, deletePlayer } = useFutebolStore();
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [showAddPlayer, setShowAddPlayer] = useState<string | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<{ teamId: string; player: Player } | null>(null);
+  const [showBulkAdd, setShowBulkAdd] = useState<string | null>(null);
 
   const [teamForm, setTeamForm] = useState({
     name: '',
+    logo: '',
     primaryColor: '#FF0000',
     secondaryColor: '#FFFFFF'
   });
@@ -23,6 +27,25 @@ export default function TeamsScreen() {
     position: ''
   });
 
+  const [bulkPlayersText, setBulkPlayersText] = useState('');
+
+  const resetTeamForm = () => {
+    setTeamForm({
+      name: '',
+      logo: '',
+      primaryColor: '#FF0000',
+      secondaryColor: '#FFFFFF'
+    });
+  };
+
+  const resetPlayerForm = () => {
+    setPlayerForm({
+      name: '',
+      number: '',
+      position: ''
+    });
+  };
+
   const handleAddTeam = () => {
     if (!teamForm.name.trim()) {
       Alert.alert('Erro', 'Nome do time é obrigatório');
@@ -31,6 +54,7 @@ export default function TeamsScreen() {
 
     addTeam({
       name: teamForm.name,
+      logo: teamForm.logo || undefined,
       colors: {
         primary: teamForm.primaryColor,
         secondary: teamForm.secondaryColor
@@ -38,7 +62,7 @@ export default function TeamsScreen() {
       players: []
     });
 
-    setTeamForm({ name: '', primaryColor: '#FF0000', secondaryColor: '#FFFFFF' });
+    resetTeamForm();
     setShowAddTeam(false);
   };
 
@@ -50,6 +74,7 @@ export default function TeamsScreen() {
 
     updateTeam(editingTeam.id, {
       name: teamForm.name,
+      logo: teamForm.logo || undefined,
       colors: {
         primary: teamForm.primaryColor,
         secondary: teamForm.secondaryColor
@@ -57,7 +82,7 @@ export default function TeamsScreen() {
     });
 
     setEditingTeam(null);
-    setTeamForm({ name: '', primaryColor: '#FF0000', secondaryColor: '#FFFFFF' });
+    resetTeamForm();
   };
 
   const handleAddPlayer = (teamId: string) => {
@@ -85,8 +110,19 @@ export default function TeamsScreen() {
       position: playerForm.position
     });
 
-    setPlayerForm({ name: '', number: '', position: '' });
+    resetPlayerForm();
     setShowAddPlayer(null);
+  };
+
+  const handleBulkAddPlayers = (teamId: string) => {
+    if (!bulkPlayersText.trim()) {
+      Alert.alert('Erro', 'Digite os jogadores no formato correto');
+      return;
+    }
+
+    addMultiplePlayers(teamId, bulkPlayersText);
+    setBulkPlayersText('');
+    setShowBulkAdd(null);
   };
 
   const handleEditPlayer = () => {
@@ -115,13 +151,14 @@ export default function TeamsScreen() {
     });
 
     setEditingPlayer(null);
-    setPlayerForm({ name: '', number: '', position: '' });
+    resetPlayerForm();
   };
 
   const startEditTeam = (team: Team) => {
     setEditingTeam(team);
     setTeamForm({
       name: team.name,
+      logo: team.logo || '',
       primaryColor: team.colors.primary,
       secondaryColor: team.colors.secondary
     });
@@ -153,8 +190,12 @@ export default function TeamsScreen() {
           <View key={team.id} style={styles.teamCard}>
             <View style={styles.teamHeader}>
               <View style={styles.teamInfo}>
-                <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
-                <View>
+                {team.logo ? (
+                  <ImageIcon color={team.colors.primary} size={40} />
+                ) : (
+                  <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
+                )}
+                <View style={styles.teamDetails}>
                   <Text style={styles.teamName}>{team.name}</Text>
                   <Text style={styles.teamPlayers}>{team.players.length} jogadores</Text>
                 </View>
@@ -187,12 +228,20 @@ export default function TeamsScreen() {
             <View style={styles.playersSection}>
               <View style={styles.playersSectionHeader}>
                 <Text style={styles.playersTitle}>Jogadores</Text>
-                <TouchableOpacity
-                  style={styles.addPlayerButton}
-                  onPress={() => setShowAddPlayer(team.id)}
-                >
-                  <Plus color="#2d5016" size={16} />
-                </TouchableOpacity>
+                <View style={styles.playerActions}>
+                  <TouchableOpacity
+                    style={styles.addPlayerButton}
+                    onPress={() => setShowAddPlayer(team.id)}
+                  >
+                    <Plus color="#2d5016" size={16} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.bulkAddButton}
+                    onPress={() => setShowBulkAdd(team.id)}
+                  >
+                    <Text style={styles.bulkAddText}>Múltiplos</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               {team.players.length === 0 ? (
@@ -207,7 +256,7 @@ export default function TeamsScreen() {
                         <Text style={styles.playerPosition}>{player.position}</Text>
                       </View>
                     </View>
-                    <View style={styles.playerActions}>
+                    <View style={styles.playerCardActions}>
                       <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() => startEditPlayer(team.id, player)}
@@ -261,17 +310,23 @@ export default function TeamsScreen() {
               onChangeText={(text) => setTeamForm({ ...teamForm, name: text })}
             />
 
-            <View style={styles.colorSection}>
-              <Text style={styles.colorLabel}>Cor Primária</Text>
-              <View style={styles.colorPreview}>
-                <View style={[styles.colorSample, { backgroundColor: teamForm.primaryColor }]} />
-                <TextInput
-                  style={styles.colorInput}
-                  value={teamForm.primaryColor}
-                  onChangeText={(text) => setTeamForm({ ...teamForm, primaryColor: text })}
-                />
-              </View>
-            </View>
+            <ImagePicker
+              label="Logo do Time"
+              imageUri={teamForm.logo}
+              onImageSelected={(uri) => setTeamForm({ ...teamForm, logo: uri })}
+            />
+
+            <ColorPicker
+              label="Cor Primária"
+              color={teamForm.primaryColor}
+              onColorChange={(color) => setTeamForm({ ...teamForm, primaryColor: color })}
+            />
+
+            <ColorPicker
+              label="Cor Secundária"
+              color={teamForm.secondaryColor}
+              onColorChange={(color) => setTeamForm({ ...teamForm, secondaryColor: color })}
+            />
 
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -279,7 +334,7 @@ export default function TeamsScreen() {
                 onPress={() => {
                   setShowAddTeam(false);
                   setEditingTeam(null);
-                  setTeamForm({ name: '', primaryColor: '#FF0000', secondaryColor: '#FFFFFF' });
+                  resetTeamForm();
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
@@ -333,7 +388,7 @@ export default function TeamsScreen() {
                 onPress={() => {
                   setShowAddPlayer(null);
                   setEditingPlayer(null);
-                  setPlayerForm({ name: '', number: '', position: '' });
+                  resetPlayerForm();
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
@@ -345,6 +400,51 @@ export default function TeamsScreen() {
                 <Text style={styles.saveButtonText}>
                   {editingPlayer ? 'Salvar' : 'Adicionar'}
                 </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Bulk Add Players Modal */}
+      {showBulkAdd && (
+        <View style={styles.modal}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Adicionar Múltiplos Jogadores</Text>
+            
+            <Text style={styles.instructionText}>
+              Digite um jogador por linha no formato:
+              {'\n'}Nome, Número, Posição
+              {'\n\n'}Exemplo:
+              {'\n'}João Silva, 10, Atacante
+              {'\n'}Pedro Santos, 9, Meio-campo
+            </Text>
+            
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="João Silva, 10, Atacante&#10;Pedro Santos, 9, Meio-campo"
+              value={bulkPlayersText}
+              onChangeText={setBulkPlayersText}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setShowBulkAdd(null);
+                  setBulkPlayersText('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={() => handleBulkAddPlayers(showBulkAdd)}
+              >
+                <Text style={styles.saveButtonText}>Adicionar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -401,12 +501,16 @@ const styles = StyleSheet.create({
   teamInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   teamColor: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+  },
+  teamDetails: {
+    flex: 1,
   },
   teamName: {
     fontSize: 18,
@@ -440,10 +544,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
+  playerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   addPlayerButton: {
     backgroundColor: '#f0f8f0',
     borderRadius: 12,
     padding: 4,
+  },
+  bulkAddButton: {
+    backgroundColor: '#e3f2fd',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  bulkAddText: {
+    fontSize: 12,
+    color: '#1976d2',
+    fontWeight: '600',
   },
   noPlayers: {
     fontSize: 14,
@@ -462,6 +581,7 @@ const styles = StyleSheet.create({
   playerInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   playerNumber: {
     fontSize: 16,
@@ -479,7 +599,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  playerActions: {
+  playerCardActions: {
     flexDirection: 'row',
   },
   emptyState: {
@@ -516,6 +636,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '90%',
     maxWidth: 400,
+    maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 20,
@@ -532,34 +653,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
   },
-  colorSection: {
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top',
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#666',
     marginBottom: 16,
-  },
-  colorLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  colorPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  colorSample: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  colorInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
+    lineHeight: 20,
   },
   modalActions: {
     flexDirection: 'row',

@@ -1,10 +1,19 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { History, Clock, Users, Zap } from 'lucide-react-native';
+import { History, Clock, Users, Zap, Edit, Trash2, Save, X } from 'lucide-react-native';
 import { useFutebolStore } from '../../stores/futebolStore';
 
 export default function HistoryScreen() {
-  const { currentMatch } = useFutebolStore();
+  const { currentMatch, updateAction, deleteAction } = useFutebolStore();
+  const [editingAction, setEditingAction] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    action: '',
+    zone: '',
+    details: '',
+    minute: '',
+    second: ''
+  });
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', { 
@@ -18,31 +27,112 @@ export default function HistoryScreen() {
   };
 
   const getActionIcon = (action: string) => {
-    switch (action.toLowerCase()) {
-      case 'gol': return '⚽';
-      case 'assistência': return '🎯';
-      case 'chute': return '🥅';
-      case 'passe': return '⚽';
-      case 'falta': return '⚠️';
-      case 'cartão amarelo': return '🟨';
-      case 'cartão vermelho': return '🟥';
-      case 'substituição': return '🔄';
-      default: return '⚽';
-    }
+    const actionMap: { [key: string]: string } = {
+      'gol': '⚽',
+      'assistência': '🎯',
+      'chute no gol': '🥅',
+      'chute fora': '📤',
+      'passe certo': '✅',
+      'passe errado': '❌',
+      'cruzamento': '↗️',
+      'escanteio': '📐',
+      'tiro livre': '🦶',
+      'pênalti': '🎯',
+      'falta': '⚠️',
+      'cartão amarelo': '🟨',
+      'cartão vermelho': '🟥',
+      'substituição': '🔄',
+      'impedimento': '🚫',
+      'desarme': '🛡️',
+      'interceptação': '✋',
+      'defesa': '🧤'
+    };
+    return actionMap[action.toLowerCase()] || '⚽';
   };
 
   const getActionColor = (action: string) => {
-    switch (action.toLowerCase()) {
-      case 'gol': return '#4CAF50';
-      case 'assistência': return '#2196F3';
-      case 'chute': return '#FF9800';
-      case 'passe': return '#9C27B0';
-      case 'falta': return '#F44336';
-      case 'cartão amarelo': return '#FFEB3B';
-      case 'cartão vermelho': return '#F44336';
-      case 'substituição': return '#607D8B';
-      default: return '#666';
-    }
+    const colorMap: { [key: string]: string } = {
+      'gol': '#4CAF50',
+      'assistência': '#2196F3',
+      'chute no gol': '#FF9800',
+      'chute fora': '#FF5722',
+      'passe certo': '#8BC34A',
+      'passe errado': '#F44336',
+      'cruzamento': '#9C27B0',
+      'escanteio': '#607D8B',
+      'tiro livre': '#795548',
+      'pênalti': '#E91E63',
+      'falta': '#F44336',
+      'cartão amarelo': '#FFEB3B',
+      'cartão vermelho': '#F44336',
+      'substituição': '#607D8B',
+      'impedimento': '#9E9E9E',
+      'desarme': '#3F51B5',
+      'interceptação': '#009688',
+      'defesa': '#00BCD4'
+    };
+    return colorMap[action.toLowerCase()] || '#666';
+  };
+
+  const startEditAction = (action: any) => {
+    setEditingAction(action.id);
+    setEditForm({
+      action: action.action,
+      zone: action.zone,
+      details: action.details || '',
+      minute: action.minute.toString(),
+      second: action.second.toString()
+    });
+  };
+
+  const saveEditAction = () => {
+    if (!editingAction) return;
+
+    const minute = parseInt(editForm.minute) || 0;
+    const second = parseInt(editForm.second) || 0;
+
+    updateAction(editingAction, {
+      action: editForm.action,
+      zone: editForm.zone,
+      details: editForm.details || undefined,
+      minute,
+      second
+    });
+
+    setEditingAction(null);
+    setEditForm({
+      action: '',
+      zone: '',
+      details: '',
+      minute: '',
+      second: ''
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingAction(null);
+    setEditForm({
+      action: '',
+      zone: '',
+      details: '',
+      minute: '',
+      second: ''
+    });
+  };
+
+  const handleDeleteAction = (actionId: string, actionName: string) => {
+    Alert.alert(
+      'Confirmar Exclusão',
+      `Deseja excluir a ação "${actionName}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Excluir', 
+          style: 'destructive', 
+          onPress: () => deleteAction(actionId) 
+        }
+      ]
+    );
   };
 
   if (!currentMatch || currentMatch.actions.length === 0) {
@@ -79,7 +169,7 @@ export default function HistoryScreen() {
     const actions = actionsByTeam[teamId];
     return {
       goals: actions.filter(a => a.action.toLowerCase() === 'gol').length,
-      shots: actions.filter(a => a.action.toLowerCase() === 'chute').length,
+      shots: actions.filter(a => a.action.toLowerCase().includes('chute')).length,
       fouls: actions.filter(a => a.action.toLowerCase() === 'falta').length,
       cards: actions.filter(a => a.action.toLowerCase().includes('cartão')).length,
     };
@@ -149,25 +239,106 @@ export default function HistoryScreen() {
           
           {sortedActions.map((action, index) => (
             <View key={action.id} style={styles.actionItem}>
-              <View style={styles.actionTime}>
-                <Text style={styles.minute}>{action.minute}'</Text>
-                <Text style={styles.timestamp}>{formatTime(action.timestamp)}</Text>
-              </View>
-              
-              <View style={styles.actionContent}>
-                <View style={styles.actionHeader}>
-                  <View style={[styles.actionIcon, { backgroundColor: getActionColor(action.action) }]}>
-                    <Text style={styles.actionEmoji}>{getActionIcon(action.action)}</Text>
+              {editingAction === action.id ? (
+                // Edit Mode
+                <View style={styles.editMode}>
+                  <View style={styles.editHeader}>
+                    <Text style={styles.editTitle}>Editando Ação</Text>
+                    <View style={styles.editActions}>
+                      <TouchableOpacity onPress={saveEditAction} style={styles.saveButton}>
+                        <Save color="#4CAF50" size={20} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
+                        <X color="#F44336" size={20} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                  <View style={styles.actionInfo}>
-                    <Text style={styles.actionType}>{action.action}</Text>
-                    <Text style={styles.actionDetails}>
-                      {action.playerName} • {action.teamName}
-                    </Text>
+                  
+                  <View style={styles.editForm}>
+                    <View style={styles.timeInputs}>
+                      <TextInput
+                        style={styles.timeInput}
+                        placeholder="Min"
+                        value={editForm.minute}
+                        onChangeText={(text) => setEditForm({ ...editForm, minute: text })}
+                        keyboardType="numeric"
+                      />
+                      <Text style={styles.timeSeparator}>:</Text>
+                      <TextInput
+                        style={styles.timeInput}
+                        placeholder="Seg"
+                        value={editForm.second}
+                        onChangeText={(text) => setEditForm({ ...editForm, second: text })}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    
+                    <TextInput
+                      style={styles.editInput}
+                      placeholder="Ação"
+                      value={editForm.action}
+                      onChangeText={(text) => setEditForm({ ...editForm, action: text })}
+                    />
+                    
+                    <TextInput
+                      style={styles.editInput}
+                      placeholder="Zona"
+                      value={editForm.zone}
+                      onChangeText={(text) => setEditForm({ ...editForm, zone: text })}
+                    />
+                    
+                    <TextInput
+                      style={[styles.editInput, styles.detailsInput]}
+                      placeholder="Detalhes (opcional)"
+                      value={editForm.details}
+                      onChangeText={(text) => setEditForm({ ...editForm, details: text })}
+                      multiline
+                      numberOfLines={2}
+                    />
                   </View>
                 </View>
-                <Text style={styles.actionZone}>{action.zone}</Text>
-              </View>
+              ) : (
+                // View Mode
+                <>
+                  <View style={styles.actionTime}>
+                    <Text style={styles.minute}>{action.minute}:{action.second.toString().padStart(2, '0')}</Text>
+                    <Text style={styles.timestamp}>{formatTime(action.timestamp)}</Text>
+                  </View>
+                  
+                  <View style={styles.actionContent}>
+                    <View style={styles.actionHeader}>
+                      <View style={[styles.actionIcon, { backgroundColor: getActionColor(action.action) }]}>
+                        <Text style={styles.actionEmoji}>{getActionIcon(action.action)}</Text>
+                      </View>
+                      <View style={styles.actionInfo}>
+                        <Text style={styles.actionType}>{action.action}</Text>
+                        <Text style={styles.actionDetails}>
+                          {action.playerName} • {action.teamName}
+                        </Text>
+                        {action.details && (
+                          <Text style={styles.actionDetailsText}>{action.details}</Text>
+                        )}
+                      </View>
+                    </View>
+                    <Text style={styles.actionZone}>{action.zone}</Text>
+                  </View>
+                  
+                  <View style={styles.actionActions}>
+                    <TouchableOpacity
+                      onPress={() => startEditAction(action)}
+                      style={styles.actionButton}
+                    >
+                      <Edit color="#666" size={16} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleDeleteAction(action.id, action.action)}
+                      style={styles.actionButton}
+                    >
+                      <Trash2 color="#ff4444" size={16} />
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
           ))}
         </View>
@@ -350,10 +521,83 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
+  actionDetailsText: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
   actionZone: {
     fontSize: 12,
     color: '#999',
     fontStyle: 'italic',
+  },
+  actionActions: {
+    flexDirection: 'column',
+    marginLeft: 8,
+  },
+  actionButton: {
+    padding: 4,
+    marginBottom: 4,
+  },
+  editMode: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 12,
+  },
+  editHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  editTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  editActions: {
+    flexDirection: 'row',
+  },
+  saveButton: {
+    padding: 4,
+    marginRight: 8,
+  },
+  cancelButton: {
+    padding: 4,
+  },
+  editForm: {
+    gap: 8,
+  },
+  timeInputs: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  timeInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    padding: 8,
+    fontSize: 14,
+    width: 50,
+    textAlign: 'center',
+  },
+  timeSeparator: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginHorizontal: 8,
+  },
+  editInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    padding: 8,
+    fontSize: 14,
+  },
+  detailsInput: {
+    height: 60,
+    textAlignVertical: 'top',
   },
   emptyState: {
     flex: 1,

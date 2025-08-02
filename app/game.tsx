@@ -1,30 +1,40 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Play, Pause, Square, Clock } from 'lucide-react-native';
+import { ArrowLeft, Play, Pause, Square, Clock, RotateCcw } from 'lucide-react-native';
 import { useFutebolStore } from '../stores/futebolStore';
 import { router } from 'expo-router';
-
-const { width, height } = Dimensions.get('window');
+import FieldView from '../components/FieldView';
 
 export default function GameScreen() {
-  const { currentMatch, endMatch, addAction } = useFutebolStore();
+  const { 
+    currentMatch, 
+    endMatch, 
+    addAction, 
+    pauseMatch, 
+    resumeMatch, 
+    updateMatchTime,
+    setPossession,
+    actionTypes 
+  } = useFutebolStore();
+  
   const [gameTime, setGameTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [showActions, setShowActions] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (isRunning && currentMatch) {
+    if (currentMatch && !currentMatch.isPaused) {
       interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - currentMatch.startTime.getTime()) / 1000);
         setGameTime(elapsed);
+        updateMatchTime(elapsed);
       }, 1000);
     }
     
     return () => clearInterval(interval);
-  }, [isRunning, currentMatch]);
+  }, [currentMatch?.isPaused, currentMatch]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -50,20 +60,35 @@ export default function GameScreen() {
     );
   };
 
-  const handleZonePress = (zone: string) => {
-    setSelectedZone(zone);
+  const handlePauseResume = () => {
+    if (!currentMatch) return;
+    
+    if (currentMatch.isPaused) {
+      resumeMatch();
+    } else {
+      pauseMatch();
+    }
   };
 
-  const quickAction = (action: string, teamId: string) => {
+  const handleZonePress = (zone: string) => {
+    setSelectedZone(zone);
+    setShowActions(true);
+  };
+
+  const handleActionPress = (actionTypeId: string, teamId: string) => {
     if (!currentMatch || !selectedZone) {
       Alert.alert('Erro', 'Selecione uma zona do campo primeiro');
       return;
     }
 
     const team = currentMatch.teamA.id === teamId ? currentMatch.teamA : currentMatch.teamB;
+    const actionType = actionTypes.find(at => at.id === actionTypeId);
     const minute = Math.floor(gameTime / 60);
+    const second = gameTime % 60;
 
-    // For quick actions, use the first player of the team
+    if (!actionType) return;
+
+    // Para ações rápidas, usar o primeiro jogador do time
     const player = team.players[0];
     if (!player) {
       Alert.alert('Erro', 'Time não possui jogadores');
@@ -75,12 +100,31 @@ export default function GameScreen() {
       playerName: player.name,
       teamId: team.id,
       teamName: team.name,
-      action,
+      action: actionType.name,
       zone: selectedZone,
-      minute
+      minute,
+      second
     });
 
     setSelectedZone(null);
+    setShowActions(false);
+  };
+
+  const resetTimer = () => {
+    Alert.alert(
+      'Resetar Cronômetro',
+      'Tem certeza que deseja resetar o cronômetro?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Resetar', 
+          onPress: () => {
+            setGameTime(0);
+            updateMatchTime(0);
+          }
+        }
+      ]
+    );
   };
 
   if (!currentMatch) {
@@ -88,17 +132,11 @@ export default function GameScreen() {
     return null;
   }
 
-  const fieldZones = [
-    ['Defesa A', 'Meio A', 'Ataque A'],
-    ['Lateral A', 'Centro', 'Lateral B'],
-    ['Ataque B', 'Meio B', 'Defesa B']
-  ];
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleEndMatch}>
+        <TouchableOpacity style={styles.headerButton} onPress={handleEndMatch}>
           <ArrowLeft color="white" size={24} />
         </TouchableOpacity>
         
@@ -106,15 +144,24 @@ export default function GameScreen() {
           <Text style={styles.matchTitle}>
             {currentMatch.teamA.name} vs {currentMatch.teamB.name}
           </Text>
-          <Text style={styles.gameTimer}>{formatTime(gameTime)}</Text>
+          <View style={styles.timerContainer}>
+            <Clock color="#90EE90" size={20} />
+            <Text style={styles.gameTimer}>{formatTime(gameTime)}</Text>
+            <TouchableOpacity onPress={resetTimer} style={styles.resetButton}>
+              <RotateCcw color="#90EE90" size={16} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.controls}>
           <TouchableOpacity
             style={styles.controlButton}
-            onPress={() => setIsRunning(!isRunning)}
+            onPress={handlePauseResume}
           >
-            {isRunning ? <Pause color="white" size={20} /> : <Play color="white" size={20} />}
+            {currentMatch.isPaused ? 
+              <Play color="white" size={20} /> : 
+              <Pause color="white" size={20} />
+            }
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.controlButton}
@@ -125,98 +172,100 @@ export default function GameScreen() {
         </View>
       </View>
 
-      <View style={styles.gameArea}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Possession Control */}
+        <View style={styles.possessionControl}>
+          <TouchableOpacity
+            style={[
+              styles.possessionButton,
+              { backgroundColor: currentMatch.teamA.colors.primary },
+              currentMatch.possession === 'teamA' && styles.activePossession
+            ]}
+            onPress={() => setPossession(currentMatch.possession === 'teamA' ? null : 'teamA')}
+          >
+            <Text style={styles.possessionText}>{currentMatch.teamA.name}</Text>
+            <Text style={styles.possessionLabel}>Posse</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.possessionButton,
+              { backgroundColor: currentMatch.teamB.colors.primary },
+              currentMatch.possession === 'teamB' && styles.activePossession
+            ]}
+            onPress={() => setPossession(currentMatch.possession === 'teamB' ? null : 'teamB')}
+          >
+            <Text style={styles.possessionText}>{currentMatch.teamB.name}</Text>
+            <Text style={styles.possessionLabel}>Posse</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Field */}
-        <View style={styles.field}>
-          <View style={styles.fieldGrid}>
-            {fieldZones.map((row, rowIndex) => (
-              <View key={rowIndex} style={styles.fieldRow}>
-                {row.map((zone, colIndex) => (
-                  <TouchableOpacity
-                    key={`${rowIndex}-${colIndex}`}
-                    style={[
-                      styles.fieldZone,
-                      selectedZone === zone && styles.selectedZone
-                    ]}
-                    onPress={() => handleZonePress(zone)}
-                  >
-                    <Text style={styles.zoneText}>{zone}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ))}
-          </View>
-        </View>
+        <FieldView
+          onZonePress={handleZonePress}
+          selectedZone={selectedZone}
+          possession={currentMatch.possession}
+          teamAColor={currentMatch.teamA.colors.primary}
+          teamBColor={currentMatch.teamB.colors.primary}
+        />
 
-        {/* Action Panel */}
-        <View style={styles.actionPanel}>
-          <Text style={styles.panelTitle}>Ações Rápidas</Text>
-          
-          {selectedZone && (
-            <Text style={styles.selectedZoneText}>Zona: {selectedZone}</Text>
-          )}
-
-          <View style={styles.teamActions}>
-            <View style={styles.teamSection}>
-              <View style={[styles.teamHeader, { backgroundColor: currentMatch.teamA.colors.primary }]}>
-                <Text style={styles.teamHeaderText}>{currentMatch.teamA.name}</Text>
+        {/* Quick Actions */}
+        {showActions && selectedZone && (
+          <View style={styles.quickActions}>
+            <Text style={styles.quickActionsTitle}>
+              Ações Rápidas - Zona: {selectedZone}
+            </Text>
+            
+            <View style={styles.teamActions}>
+              <View style={styles.teamSection}>
+                <View style={[styles.teamHeader, { backgroundColor: currentMatch.teamA.colors.primary }]}>
+                  <Text style={styles.teamHeaderText}>{currentMatch.teamA.name}</Text>
+                </View>
+                <View style={styles.actionButtons}>
+                  {actionTypes.slice(0, 6).map(actionType => (
+                    <TouchableOpacity
+                      key={actionType.id}
+                      style={[styles.actionButton, { backgroundColor: actionType.color }]}
+                      onPress={() => handleActionPress(actionType.id, currentMatch.teamA.id)}
+                    >
+                      <Text style={styles.actionEmoji}>{actionType.icon}</Text>
+                      <Text style={styles.actionButtonText}>{actionType.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
-                  onPress={() => quickAction('Gol', currentMatch.teamA.id)}
-                  disabled={!selectedZone}
-                >
-                  <Text style={styles.actionButtonText}>⚽ Gol</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: '#FF9800' }]}
-                  onPress={() => quickAction('Chute', currentMatch.teamA.id)}
-                  disabled={!selectedZone}
-                >
-                  <Text style={styles.actionButtonText}>🥅 Chute</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: '#F44336' }]}
-                  onPress={() => quickAction('Falta', currentMatch.teamA.id)}
-                  disabled={!selectedZone}
-                >
-                  <Text style={styles.actionButtonText}>⚠️ Falta</Text>
-                </TouchableOpacity>
+
+              <View style={styles.teamSection}>
+                <View style={[styles.teamHeader, { backgroundColor: currentMatch.teamB.colors.primary }]}>
+                  <Text style={styles.teamHeaderText}>{currentMatch.teamB.name}</Text>
+                </View>
+                <View style={styles.actionButtons}>
+                  {actionTypes.slice(0, 6).map(actionType => (
+                    <TouchableOpacity
+                      key={actionType.id}
+                      style={[styles.actionButton, { backgroundColor: actionType.color }]}
+                      onPress={() => handleActionPress(actionType.id, currentMatch.teamB.id)}
+                    >
+                      <Text style={styles.actionEmoji}>{actionType.icon}</Text>
+                      <Text style={styles.actionButtonText}>{actionType.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             </View>
 
-            <View style={styles.teamSection}>
-              <View style={[styles.teamHeader, { backgroundColor: currentMatch.teamB.colors.primary }]}>
-                <Text style={styles.teamHeaderText}>{currentMatch.teamB.name}</Text>
-              </View>
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
-                  onPress={() => quickAction('Gol', currentMatch.teamB.id)}
-                  disabled={!selectedZone}
-                >
-                  <Text style={styles.actionButtonText}>⚽ Gol</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: '#FF9800' }]}
-                  onPress={() => quickAction('Chute', currentMatch.teamB.id)}
-                  disabled={!selectedZone}
-                >
-                  <Text style={styles.actionButtonText}>🥅 Chute</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: '#F44336' }]}
-                  onPress={() => quickAction('Falta', currentMatch.teamB.id)}
-                  disabled={!selectedZone}
-                >
-                  <Text style={styles.actionButtonText}>⚠️ Falta</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            <TouchableOpacity
+              style={styles.closeActionsButton}
+              onPress={() => {
+                setShowActions(false);
+                setSelectedZone(null);
+              }}
+            >
+              <Text style={styles.closeActionsText}>Fechar</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -233,7 +282,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: '#2d5016',
   },
-  backButton: {
+  headerButton: {
     padding: 8,
   },
   matchInfo: {
@@ -241,15 +290,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   matchTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
   gameTimer: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#90EE90',
-    marginTop: 4,
+    marginHorizontal: 8,
+  },
+  resetButton: {
+    padding: 4,
   },
   controls: {
     flexDirection: 'row',
@@ -258,77 +315,57 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 8,
   },
-  gameArea: {
+  content: {
     flex: 1,
-    flexDirection: 'row',
     backgroundColor: '#f5f5f5',
   },
-  field: {
-    flex: 2,
-    backgroundColor: '#4CAF50',
-    margin: 8,
-    borderRadius: 12,
-    padding: 16,
-  },
-  fieldGrid: {
-    flex: 1,
-  },
-  fieldRow: {
-    flex: 1,
+  possessionControl: {
     flexDirection: 'row',
-    marginVertical: 2,
+    padding: 16,
+    gap: 12,
   },
-  fieldZone: {
+  possessionButton: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    margin: 2,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    opacity: 0.7,
   },
-  selectedZone: {
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    borderColor: 'white',
-    borderWidth: 2,
+  activePossession: {
+    opacity: 1,
+    borderWidth: 3,
+    borderColor: '#FFD700',
   },
-  zoneText: {
+  possessionText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  possessionLabel: {
     color: 'white',
     fontSize: 12,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    marginTop: 2,
   },
-  actionPanel: {
-    flex: 1,
+  quickActions: {
     backgroundColor: 'white',
-    margin: 8,
+    margin: 16,
     borderRadius: 12,
     padding: 16,
   },
-  panelTitle: {
+  quickActionsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
     textAlign: 'center',
+    marginBottom: 16,
     color: '#333',
   },
-  selectedZoneText: {
-    fontSize: 14,
-    color: '#2d5016',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontWeight: '600',
-  },
   teamActions: {
-    flex: 1,
+    gap: 16,
   },
   teamSection: {
-    flex: 1,
     marginBottom: 16,
   },
   teamHeader: {
-    backgroundColor: '#2196F3',
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
@@ -341,19 +378,36 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#4CAF50',
+    minWidth: '30%',
     borderRadius: 8,
     padding: 12,
-    marginHorizontal: 2,
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  actionEmoji: {
+    fontSize: 20,
+    marginBottom: 4,
   },
   actionButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 10,
+    textAlign: 'center',
+  },
+  closeActionsButton: {
+    backgroundColor: '#666',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  closeActionsText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
