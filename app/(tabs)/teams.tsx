@@ -513,39 +513,35 @@ export default function TeamsScreen() {
       {/* Bulk Add Players Modal */}
       {showBulkAdd && (
         <View style={styles.modal}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, styles.bulkModalContent]}>
             <Text style={styles.modalTitle}>Adicionar Múltiplos Jogadores</Text>
             
-            <ScrollView style={styles.bulkAddScroll}>
-              <Text style={styles.instructionText}>
-                Digite os jogadores no formato: Número,Nome,Posição,Função{'\n'}
-                Um jogador por linha. Exemplo:{'\n'}
-                1,João Silva,Goleiro,Goleiro Tradicional{'\n'}
-                10,Pedro Santos,Meio-campista,Meia Armador
-              </Text>
-              
-              <TextInput
-                style={[styles.input, styles.bulkTextArea]}
-                placeholder="1,João Silva,Goleiro,Goleiro Tradicional&#10;10,Pedro Santos,Meio-campista,Meia Armador"
-                value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
-                onChangeText={(text) => {
-                  const lines = text.split('\n');
-                  const players = lines.map(line => {
-                    const parts = line.split(',');
-                    return {
-                      number: parts[0] || '',
-                      name: parts[1] || '',
-                      position: parts[2] || '',
-                      role: parts[3] || ''
-                    };
-                  });
-                  setBulkPlayers(players);
-                }}
-                multiline
-                numberOfLines={10}
-                textAlignVertical="top"
-              />
-            </ScrollView>
+            <Text style={styles.instructionText}>
+              Digite um jogador por linha no formato:{'\n'}
+              Número,Nome,Posição,Função
+            </Text>
+            
+            <TextInput
+              style={[styles.input, styles.bulkTextArea]}
+              placeholder=""
+              value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
+              onChangeText={(text) => {
+                const lines = text.split('\n');
+                const players = lines.map(line => {
+                  const parts = line.split(',');
+                  return {
+                    number: parts[0] || '',
+                    name: parts[1] || '',
+                    position: parts[2] || '',
+                    role: parts[3] || ''
+                  };
+                });
+                setBulkPlayers(players);
+              }}
+              multiline
+              numberOfLines={15}
+              textAlignVertical="top"
+            />
 
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -774,10 +770,10 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
-  quickSelectContainer: {
+  quickSelect: {
     marginBottom: 16,
   },
-  quickSelect: {
+  quickSelectContainer: {
     marginBottom: 16,
   },
   quickSelectItem: {
@@ -790,7 +786,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    marginRight: 4,
   },
   quickSelectText: {
     fontSize: 12,
@@ -801,17 +796,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 20,
     height: 20,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 4,
   },
   removeButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
   },
-  bulkAddScroll: {
-    maxHeight: 300,
-    marginBottom: 16,
+  bulkModalContent: {
+    maxHeight: '90%',
   },
   bulkPlayerRow: {
     flexDirection: 'row',
@@ -823,15 +818,17 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   bulkTextArea: {
-    height: 200,
+    height: 300,
     textAlignVertical: 'top',
     fontFamily: 'monospace',
+    flex: 1,
   },
   instructionText: {
     fontSize: 14,
     color: '#666',
     marginBottom: 16,
     lineHeight: 20,
+    textAlign: 'center',
   },
   modalActions: {
     flexDirection: 'row',
