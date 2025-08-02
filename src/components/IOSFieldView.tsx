@@ -72,6 +72,26 @@ export function IOSFieldView() {
   // Configurar fullscreen e orientação quando o componente monta
   useEffect(() => {
     const setupFullscreen = async () => {
+      // Forçar orientação paisagem imediatamente
+      if (isSafariIPhone()) {
+        // Tentar bloquear orientação paisagem primeiro
+        if ('screen' in window && 'orientation' in (window.screen as any)) {
+          try {
+            await (window.screen as any).orientation.lock('landscape')
+          } catch (e) {
+            console.log('Orientation lock not supported, using CSS fallback')
+          }
+        }
+        
+        // Forçar rotação via CSS se necessário
+        if (window.innerHeight > window.innerWidth) {
+          document.body.style.transform = 'rotate(90deg)'
+          document.body.style.transformOrigin = 'center center'
+          document.body.style.width = '100vh'
+          document.body.style.height = '100vw'
+        }
+      }
+      
       try {
         if (isSafariIPhone()) {
           // Para Safari iPhone, usar viewport meta e CSS
@@ -107,14 +127,14 @@ export function IOSFieldView() {
           }
           formatDetectionMeta.setAttribute('content', 'telephone=no')
           
-          // Forçar orientação paisagem no Safari iPhone
-          if ('screen' in window && 'orientation' in (window.screen as any)) {
-            try {
-              await (window.screen as any).orientation.lock('landscape')
-            } catch (e) {
-              console.log('Orientation lock not supported')
-            }
+          // Adicionar meta para standalone mode
+          let standaloneMeta = document.querySelector('meta[name="mobile-web-app-capable"]')
+          if (!standaloneMeta) {
+            standaloneMeta = document.createElement('meta')
+            standaloneMeta.setAttribute('name', 'mobile-web-app-capable')
+            document.head.appendChild(standaloneMeta)
           }
+          standaloneMeta.setAttribute('content', 'yes')
           
           // Simular fullscreen com CSS
           document.body.style.overflow = 'hidden'
@@ -128,32 +148,58 @@ export function IOSFieldView() {
           document.body.style.padding = '0'
           document.body.style.background = '#2d5016'
           
-          // Esconder a barra de endereços do Safari - múltiplas tentativas
+          // Função para esconder barra de endereços
           const hideAddressBar = () => {
             window.scrollTo(0, 1)
             document.body.scrollTop = 1
             if (document.documentElement) {
               document.documentElement.scrollTop = 1
             }
+            // Forçar reflow
+            document.body.offsetHeight
           }
           
+          // Esconder imediatamente
           hideAddressBar()
+          
+          // Múltiplas tentativas com intervalos crescentes
           setTimeout(hideAddressBar, 50)
           setTimeout(hideAddressBar, 100)
           setTimeout(hideAddressBar, 200)
           setTimeout(hideAddressBar, 500)
           setTimeout(hideAddressBar, 1000)
+          setTimeout(hideAddressBar, 2000)
           
-          // Listener para orientação
+          // Listeners para manter fullscreen
           window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+              // Reconfigurar após mudança de orientação
+              document.body.style.width = '100vw'
+              document.body.style.height = '100vh'
+              document.body.style.height = '-webkit-fill-available'
+            }, 50)
             setTimeout(hideAddressBar, 100)
             setTimeout(hideAddressBar, 500)
+            setTimeout(hideAddressBar, 1000)
           })
           
-          // Listener para resize
           window.addEventListener('resize', () => {
             setTimeout(hideAddressBar, 100)
+            setTimeout(hideAddressBar, 300)
           })
+          
+          // Listener para scroll (prevenir)
+          window.addEventListener('scroll', (e) => {
+            e.preventDefault()
+            hideAddressBar()
+          }, { passive: false })
+          
+          // Listener para touchmove (prevenir scroll)
+          document.addEventListener('touchmove', (e) => {
+            if (e.target === document.body) {
+              e.preventDefault()
+            }
+          }, { passive: false })
           
           setIsFullscreen(true)
         } else {
