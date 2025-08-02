@@ -36,7 +36,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
       addAction({
         type: 'specific',
         teamId: targetTeamId,
-        zone: { row: 6, col: 10 }, // Centro do campo por padrão (13/2 ≈ 6, 20/2 = 10)
+        zone: { row: 7, col: 10 }, // Centro do campo por padrão (14/2 = 7, 20/2 = 10)
         actionName: actionType.name
       })
 
@@ -51,7 +51,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
           addAction({
             type: 'specific',
             teamId: opposingTeamId,
-            zone: { row: 6, col: 10 },
+            zone: { row: 7, col: 10 },
             actionName: counterActionType.name
           })
         }
@@ -77,7 +77,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
         type: 'specific',
         teamId: targetTeamId,
         playerId,
-        zone: { row: 6, col: 10 }, // Centro do campo por padrão
+        zone: { row: 7, col: 10 }, // Centro do campo por padrão
         actionName: selectedAction.name
       })
 
@@ -92,7 +92,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
           addAction({
             type: 'specific',
             teamId: opposingTeamId,
-            zone: { row: 6, col: 10 },
+            zone: { row: 7, col: 10 },
             actionName: counterActionType.name
           })
         }
