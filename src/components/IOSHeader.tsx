@@ -61,6 +61,7 @@ export function IOSHeader({
               size="icon"
               onClick={onMore}
               className="h-10 w-10 rounded-full touch-target"
+              title="Device Preview"
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
