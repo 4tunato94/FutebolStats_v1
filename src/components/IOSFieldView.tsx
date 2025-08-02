@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react'
 import { 
   Maximize2, 
   Minimize2, 
-  Play, 
-  Pause, 
-  RotateCcw, 
   Clock,
   Users,
   Zap,
@@ -21,8 +18,9 @@ export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession } = useFutebolStore()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
-  const [activePanel, setActivePanel] = useState<'timer' | 'possession' | 'actions' | 'history' | null>(null)
+  const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
   const [timer, setTimer] = useState(0)
+  const [lastClickTime, setLastClickTime] = useState(0)
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
@@ -61,6 +59,21 @@ export function IOSFieldView() {
     updateTimer(0)
   }
 
+  const handleTimerClick = () => {
+    const now = Date.now()
+    const timeDiff = now - lastClickTime
+    
+    if (timeDiff < 300) {
+      // Duplo clique - resetar
+      resetTimer()
+    } else {
+      // Clique simples - play/pause
+      togglePlayPause()
+    }
+    
+    setLastClickTime(now)
+  }
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen)
     if (!isFullscreen) {
@@ -81,7 +94,7 @@ export function IOSFieldView() {
     setShowSidebar(false)
   }
 
-  const openPanel = (panel: 'timer' | 'actions' | 'history') => {
+  const openPanel = (panel: 'actions' | 'history') => {
     setActivePanel(panel)
     setShowSidebar(true)
   }
@@ -145,9 +158,9 @@ export function IOSFieldView() {
       <div className="absolute left-4 bottom-4 z-40 flex space-x-3">
         {/* Cronômetro */}
         <Button
-          variant={activePanel === 'timer' ? 'default' : 'outline'}
+          variant="outline"
           size="icon"
-          onClick={() => openPanel('timer')}
+          onClick={handleTimerClick}
           className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
         >
           <Clock className="h-4 w-4" />
@@ -201,7 +214,6 @@ export function IOSFieldView() {
         <div className="p-3 border-b border-border/50">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">
-              {activePanel === 'timer' && 'Cronômetro'}
               {activePanel === 'actions' && 'Registrar Ação'}
               {activePanel === 'history' && 'Histórico de Ações'}
             </h2>
@@ -221,36 +233,6 @@ export function IOSFieldView() {
 
         {/* Conteúdo do Painel Ativo */}
         <div className="flex-1 overflow-y-auto p-3">
-          {activePanel === 'timer' && (
-            <div className="flex flex-col items-center space-y-4">
-              <div className="text-center w-full">
-                <div className="text-2xl font-mono font-bold mb-4 p-4 bg-muted/30 rounded-lg">
-                  {formatTime(timer)}
-                </div>
-                
-                <div className="flex justify-center space-x-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={togglePlayPause}
-                    className="h-12 w-12 rounded-full touch-target"
-                  >
-                    {currentMatch.isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={resetTimer}
-                    className="h-12 w-12 rounded-full touch-target"
-                  >
-                    <RotateCcw className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {activePanel === 'actions' && (
             <div className="space-y-4">
               <div className="text-center mb-4">
