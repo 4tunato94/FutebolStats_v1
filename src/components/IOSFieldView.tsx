@@ -34,13 +34,27 @@ export function IOSFieldView() {
   // Sincronizar estado fullscreen com o navegador
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
+      // Verificar diferentes propriedades de fullscreen
+      const isFullscreenActive = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      )
+      setIsFullscreen(isFullscreenActive)
     }
 
+    // Adicionar listeners para diferentes navegadores
     document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange)
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange)
     
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange)
     }
   }, [])
 
@@ -149,12 +163,41 @@ export function IOSFieldView() {
   }
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      // Entrar em tela cheia
-      document.documentElement.requestFullscreen?.()
-    } else {
-      // Sair da tela cheia
-      document.exitFullscreen?.()
+    try {
+      if (!document.fullscreenElement) {
+        // Entrar em tela cheia - tentar diferentes métodos
+        const docEl = document.documentElement
+        if (docEl.requestFullscreen) {
+          docEl.requestFullscreen()
+        } else if ((docEl as any).webkitRequestFullscreen) {
+          // Safari
+          (docEl as any).webkitRequestFullscreen()
+        } else if ((docEl as any).mozRequestFullScreen) {
+          // Firefox
+          (docEl as any).mozRequestFullScreen()
+        } else if ((docEl as any).msRequestFullscreen) {
+          // IE/Edge
+          (docEl as any).msRequestFullscreen()
+        }
+      } else {
+        // Sair da tela cheia - tentar diferentes métodos
+        if (document.exitFullscreen) {
+          document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          // Safari
+          (document as any).webkitExitFullscreen()
+        } else if ((document as any).mozCancelFullScreen) {
+          // Firefox
+          (document as any).mozCancelFullScreen()
+        } else if ((document as any).msExitFullscreen) {
+          // IE/Edge
+          (document as any).msExitFullscreen()
+        }
+      }
+    } catch (error) {
+      console.warn('Fullscreen not supported or failed:', error)
+      // Fallback: simular fullscreen com CSS
+      setIsFullscreen(!isFullscreen)
     }
   }
 
@@ -246,12 +289,12 @@ export function IOSFieldView() {
             variant="outline"
             size="icon"
             onClick={toggleFullscreen}
-            className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target"
+            className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
           >
             {isFullscreen ? (
-              <Minimize2 className="h-4 w-4" />
+              <Minimize2 className="h-5 w-5" />
             ) : (
-              <Maximize2 className="h-4 w-4" />
+              <Maximize2 className="h-5 w-5" />
             )}
           </Button>
         </div>
@@ -276,9 +319,9 @@ export function IOSFieldView() {
           variant="outline"
           size="icon"
           onClick={handleTimerClick}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
         >
-          <Clock className="h-4 w-4" />
+          <Clock className="h-5 w-5" />
         </Button>
         
         {/* Posse de Bola - Mostra logo do time selecionado */}
@@ -286,16 +329,16 @@ export function IOSFieldView() {
           variant="outline"
           size="icon"
           onClick={togglePossession}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1 active:scale-95 transition-transform"
         >
           {currentPossessionTeam ? (
             <img 
               src={currentPossessionTeam.logoUrl} 
               alt={`${currentPossessionTeam.name} logo`}
-              className="w-6 h-6 object-contain"
+              className="w-7 h-7 object-contain"
             />
           ) : (
-            <Users className="h-4 w-4" />
+            <Users className="h-5 w-5" />
           )}
         </Button>
         
@@ -304,9 +347,9 @@ export function IOSFieldView() {
           variant={activePanel === 'actions' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('actions')}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
         >
-          <Zap className="h-4 w-4" />
+          <Zap className="h-5 w-5" />
         </Button>
 
         {/* Histórico de Ações */}
@@ -314,9 +357,9 @@ export function IOSFieldView() {
           variant={activePanel === 'history' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('history')}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
         >
-          <History className="h-4 w-4" />
+          <History className="h-5 w-5" />
         </Button>
       </div>
 
