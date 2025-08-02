@@ -51,7 +51,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
           addAction({
             type: 'specific',
             teamId: opposingTeamId,
-            zone: { row: 6, col: 10 }, // Centro do campo por padrão
+            zone: { row: 6, col: 10 },
             actionName: counterActionType.name
           })
         }

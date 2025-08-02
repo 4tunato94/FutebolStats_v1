@@ -131,7 +131,7 @@ export default {
 			'20': 'repeat(20, minmax(0, 1fr))'
 		},
 		gridTemplateRows: {
-			'14': 'repeat(14, minmax(0, 1fr))'
+			'13': 'repeat(13, minmax(0, 1fr))'
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
