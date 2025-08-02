@@ -57,10 +57,10 @@ export function IOSHeader({
           )}
           {onMore && (
             <Button
-              variant="ghost"
+             variant="outline"
               size="icon"
               onClick={onMore}
-              className="h-10 w-10 rounded-full touch-target"
+             className="h-10 w-10 rounded-full touch-target border-2 bg-background/50 hover:bg-accent"
               title="Device Preview"
             >
               <MoreHorizontal className="h-4 w-4" />
