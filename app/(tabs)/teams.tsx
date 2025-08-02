@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, CreditCard as Edit, Trash2, Users, Image as ImageIcon } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFutebolStore, Team, Player } from '../../stores/futebolStore';
 import ColorPicker from '../../components/ColorPicker';
 import ImagePicker from '../../components/ImagePicker';
@@ -226,7 +226,7 @@ export default function TeamsScreen() {
           style={styles.addButton}
           onPress={() => setShowAddTeam(true)}
         >
-          <Plus color="white" size={24} />
+          <Ionicons name="add" color="white" size={24} />
         </TouchableOpacity>
       </View>
 
@@ -236,7 +236,7 @@ export default function TeamsScreen() {
             <View style={styles.teamHeader}>
               <View style={styles.teamInfo}>
                 {team.logo ? (
-                  <ImageIcon color={team.colors.primary} size={40} />
+                  <Ionicons name="image" color={team.colors.primary} size={40} />
                 ) : (
                   <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
                 )}
@@ -250,7 +250,7 @@ export default function TeamsScreen() {
                   style={styles.actionButton}
                   onPress={() => startEditTeam(team)}
                 >
-                  <Edit color="#666" size={20} />
+                  <Ionicons name="create" color="#666" size={20} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -265,7 +265,7 @@ export default function TeamsScreen() {
                     );
                   }}
                 >
-                  <Trash2 color="#ff4444" size={20} />
+                  <Ionicons name="trash" color="#ff4444" size={20} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -278,7 +278,7 @@ export default function TeamsScreen() {
                     style={styles.addPlayerButton}
                     onPress={() => setShowAddPlayer(team.id)}
                   >
-                    <Plus color="#2d5016" size={16} />
+                    <Ionicons name="add" color="#2d5016" size={16} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.bulkAddButton}
@@ -306,7 +306,7 @@ export default function TeamsScreen() {
                         style={styles.actionButton}
                         onPress={() => startEditPlayer(team.id, player)}
                       >
-                        <Edit color="#666" size={16} />
+                        <Ionicons name="create" color="#666" size={16} />
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.actionButton}
@@ -321,7 +321,7 @@ export default function TeamsScreen() {
                           );
                         }}
                       >
-                        <Trash2 color="#ff4444" size={16} />
+                        <Ionicons name="trash" color="#ff4444" size={16} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -333,7 +333,7 @@ export default function TeamsScreen() {
 
         {teams.length === 0 && (
           <View style={styles.emptyState}>
-            <Users color="#666" size={80} />
+            <Ionicons name="people" color="#666" size={80} />
             <Text style={styles.emptyTitle}>Nenhum time cadastrado</Text>
             <Text style={styles.emptyText}>Toque no botão + para adicionar seu primeiro time</Text>
           </View>

@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Play, Pause, RotateCcw, Menu, X } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFutebolStore } from '../stores/futebolStore';
 import { router } from 'expo-router';
 import FieldView from '../components/FieldView';
@@ -199,7 +199,7 @@ function GameContent() {
       {/* Controles laterais esquerdos */}
       <View style={styles.leftControls}>
         <TouchableOpacity style={styles.controlButton} onPress={handleEndMatch}>
-          <ArrowLeft color="white" size={24} />
+          <Ionicons name="arrow-back" color="white" size={24} />
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.controlButton} onPress={handlePossessionToggle}>
@@ -220,7 +220,7 @@ function GameContent() {
           style={[styles.controlButton, sidebarOpen && styles.activeControl]} 
           onPress={() => setSidebarOpen(!sidebarOpen)}
         >
-          {sidebarOpen ? <X color="white" size={24} /> : <Menu color="white" size={24} />}
+          {sidebarOpen ? <Ionicons name="close" color="white" size={24} /> : <Ionicons name="menu" color="white" size={24} />}
         </TouchableOpacity>
       </View>
 

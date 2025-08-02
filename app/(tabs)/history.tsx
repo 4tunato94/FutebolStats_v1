@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { History, Clock, Users, Zap, CreditCard as Edit, Trash2, Save, X } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFutebolStore } from '../../stores/futebolStore';
 
 export default function HistoryScreen() {
@@ -143,7 +143,7 @@ export default function HistoryScreen() {
         </View>
         
         <View style={styles.emptyState}>
-          <History color="#666" size={80} />
+          <Ionicons name="time" color="#666" size={80} />
           <Text style={styles.emptyTitle}>Nenhuma ação registrada</Text>
           <Text style={styles.emptyText}>
             {!currentMatch 
@@ -246,10 +246,10 @@ export default function HistoryScreen() {
                     <Text style={styles.editTitle}>Editando Ação</Text>
                     <View style={styles.editActions}>
                       <TouchableOpacity onPress={saveEditAction} style={styles.saveButton}>
-                        <Save color="#4CAF50" size={20} />
+                        <Ionicons name="checkmark" color="#4CAF50" size={20} />
                       </TouchableOpacity>
                       <TouchableOpacity onPress={cancelEdit} style={styles.cancelButton}>
-                        <X color="#F44336" size={20} />
+                        <Ionicons name="close" color="#F44336" size={20} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -328,13 +328,13 @@ export default function HistoryScreen() {
                       onPress={() => startEditAction(action)}
                       style={styles.actionButton}
                     >
-                      <Edit color="#666" size={16} />
+                      <Ionicons name="create" color="#666" size={16} />
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleDeleteAction(action.id, action.action)}
                       style={styles.actionButton}
                     >
-                      <Trash2 color="#ff4444" size={16} />
+                      <Ionicons name="trash" color="#ff4444" size={16} />
                     </TouchableOpacity>
                   </View>
                 </>

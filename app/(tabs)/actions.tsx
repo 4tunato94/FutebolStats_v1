@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Zap, Plus, CreditCard as Edit, Trash2 } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFutebolStore } from '../../stores/futebolStore';
 import ColorPicker from '../../components/ColorPicker';
 
@@ -169,7 +169,7 @@ export default function ActionsScreen() {
           style={styles.addButton}
           onPress={() => setShowAddActionType(true)}
         >
-          <Plus color="white" size={24} />
+          <Ionicons name="add" color="white" size={24} />
         </TouchableOpacity>
       </View>
 
@@ -189,7 +189,7 @@ export default function ActionsScreen() {
                       onPress={() => startEditActionType(actionType)}
                       style={styles.actionTypeButton}
                     >
-                      <Edit color="#666" size={16} />
+                      <Ionicons name="create" color="#666" size={16} />
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
@@ -204,7 +204,7 @@ export default function ActionsScreen() {
                       }}
                       style={styles.actionTypeButton}
                     >
-                      <Trash2 color="#ff4444" size={16} />
+                      <Ionicons name="trash" color="#ff4444" size={16} />
                     </TouchableOpacity>
                   </View>
                 </View>

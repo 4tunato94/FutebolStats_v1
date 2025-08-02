@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
-import { Upload } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ImagePickerProps {
   imageUri?: string;
@@ -21,7 +21,7 @@ export default function ImagePicker({ imageUri, onImageSelected, label }: ImageP
       />
       
       <View style={styles.note}>
-        <Upload color="#666" size={16} />
+        <Ionicons name="cloud-upload" color="#666" size={16} />
         <Text style={styles.noteText}>Cole a URL de uma imagem online</Text>
       </View>
     </View>

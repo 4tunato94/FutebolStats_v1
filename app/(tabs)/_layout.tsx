@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Users, Zap, History } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
@@ -26,7 +26,7 @@ export default function TabLayout() {
         options={{
           title: 'Início',
           tabBarIcon: ({ color, size }) => (
-            <Home color={color} size={size} />
+            <Ionicons name="home" color={color} size={size} />
           ),
         }}
       />
@@ -35,7 +35,7 @@ export default function TabLayout() {
         options={{
           title: 'Times',
           tabBarIcon: ({ color, size }) => (
-            <Users color={color} size={size} />
+            <Ionicons name="people" color={color} size={size} />
           ),
         }}
       />
@@ -44,7 +44,7 @@ export default function TabLayout() {
         options={{
           title: 'Ações',
           tabBarIcon: ({ color, size }) => (
-            <Zap color={color} size={size} />
+            <Ionicons name="flash" color={color} size={size} />
           ),
         }}
       />
@@ -53,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: 'Histórico',
           tabBarIcon: ({ color, size }) => (
-            <History color={color} size={size} />
+            <Ionicons name="time" color={color} size={size} />
           ),
         }}
       />

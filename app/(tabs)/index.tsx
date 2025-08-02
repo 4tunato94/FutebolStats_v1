@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Play, Users, ChevronRight, ChevronDown } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFutebolStore } from '../../stores/futebolStore';
 import { router } from 'expo-router';
 
@@ -35,7 +35,7 @@ export default function HomeScreen() {
         </View>
         
         <View style={styles.emptyState}>
-          <Users color="#666" size={80} />
+          <Ionicons name="people" color="#666" size={80} />
           <Text style={styles.emptyTitle}>Times Insuficientes</Text>
           <Text style={styles.emptyText}>
             Cadastre pelo menos 2 times para começar uma análise
@@ -56,7 +56,7 @@ export default function HomeScreen() {
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={styles.cardIcon}>
-              <Play color="#2d5016" size={24} />
+              <Ionicons name="play" color="#2d5016" size={24} />
             </View>
             <View style={styles.cardTitleContainer}>
               <Text style={styles.cardTitle}>Iniciar Partida</Text>
@@ -78,7 +78,7 @@ export default function HomeScreen() {
                 ) : (
                   <Text style={styles.dropdownPlaceholder}>Selecionar time...</Text>
                 )}
-                <ChevronDown color="#666" size={20} />
+                <Ionicons name="chevron-down" color="#666" size={20} />
               </TouchableOpacity>
             </View>
 
@@ -96,7 +96,7 @@ export default function HomeScreen() {
                 ) : (
                   <Text style={styles.dropdownPlaceholder}>Selecionar time...</Text>
                 )}
-                <ChevronDown color="#666" size={20} />
+                <Ionicons name="chevron-down" color="#666" size={20} />
               </TouchableOpacity>
             </View>
 
@@ -108,9 +108,9 @@ export default function HomeScreen() {
               onPress={handleStartMatch}
               disabled={!teamAId || !teamBId}
             >
-              <Play color="white" size={28} />
+              <Ionicons name="play" color="white" size={28} />
               <Text style={styles.startButtonText}>Iniciar Análise</Text>
-              <ChevronRight color="white" size={28} />
+              <Ionicons name="chevron-forward" color="white" size={28} />
             </TouchableOpacity>
           </View>
         </View>
