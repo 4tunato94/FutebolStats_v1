@@ -77,7 +77,7 @@ export function IOSFieldView() {
           // Para Safari iPhone, usar viewport meta e CSS
           const viewport = document.querySelector('meta[name="viewport"]')
           if (viewport) {
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=landscape')
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=landscape, minimal-ui')
           }
           
           // Adicionar meta para status bar
@@ -98,6 +98,15 @@ export function IOSFieldView() {
           }
           webAppMeta.setAttribute('content', 'yes')
           
+          // Adicionar meta para esconder UI do Safari
+          let formatDetectionMeta = document.querySelector('meta[name="format-detection"]')
+          if (!formatDetectionMeta) {
+            formatDetectionMeta = document.createElement('meta')
+            formatDetectionMeta.setAttribute('name', 'format-detection')
+            document.head.appendChild(formatDetectionMeta)
+          }
+          formatDetectionMeta.setAttribute('content', 'telephone=no')
+          
           // Forçar orientação paisagem no Safari iPhone
           if ('screen' in window && 'orientation' in (window.screen as any)) {
             try {
@@ -112,13 +121,39 @@ export function IOSFieldView() {
           document.body.style.position = 'fixed'
           document.body.style.width = '100vw'
           document.body.style.height = '100vh'
+          document.body.style.height = '-webkit-fill-available'
           document.body.style.top = '0'
           document.body.style.left = '0'
+          document.body.style.margin = '0'
+          document.body.style.padding = '0'
+          document.body.style.background = '#2d5016'
           
-          // Esconder a barra de endereços do Safari
-          window.scrollTo(0, 1)
-          setTimeout(() => window.scrollTo(0, 1), 100)
-          setTimeout(() => window.scrollTo(0, 1), 500)
+          // Esconder a barra de endereços do Safari - múltiplas tentativas
+          const hideAddressBar = () => {
+            window.scrollTo(0, 1)
+            document.body.scrollTop = 1
+            if (document.documentElement) {
+              document.documentElement.scrollTop = 1
+            }
+          }
+          
+          hideAddressBar()
+          setTimeout(hideAddressBar, 50)
+          setTimeout(hideAddressBar, 100)
+          setTimeout(hideAddressBar, 200)
+          setTimeout(hideAddressBar, 500)
+          setTimeout(hideAddressBar, 1000)
+          
+          // Listener para orientação
+          window.addEventListener('orientationchange', () => {
+            setTimeout(hideAddressBar, 100)
+            setTimeout(hideAddressBar, 500)
+          })
+          
+          // Listener para resize
+          window.addEventListener('resize', () => {
+            setTimeout(hideAddressBar, 100)
+          })
           
           setIsFullscreen(true)
         } else {

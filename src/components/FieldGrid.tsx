@@ -13,6 +13,32 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
   const [markedZones, setMarkedZones] = useState<Set<string>>(new Set())
   const [lastPossession, setLastPossession] = useState<string | null>(null)
 
+  // Detectar se é Safari no iPhone
+  const isSafariIPhone = () => {
+    const userAgent = navigator.userAgent
+    const isIPhone = /iPhone/.test(userAgent)
+    const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent)
+    return isIPhone && isSafari
+  }
+
+  const [isLandscape, setIsLandscape] = useState(false)
+
+  // Detectar orientação
+  useEffect(() => {
+    const checkOrientation = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight)
+    }
+
+    checkOrientation()
+    window.addEventListener('orientationchange', checkOrientation)
+    window.addEventListener('resize', checkOrientation)
+
+    return () => {
+      window.removeEventListener('orientationchange', checkOrientation)
+      window.removeEventListener('resize', checkOrientation)
+    }
+  }, [])
+
   if (!currentMatch) return null
 
   // Limpar marcações quando a posse mudar
@@ -22,6 +48,7 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
       setLastPossession(currentMatch.currentPossession)
     }
   }, [currentMatch.currentPossession, lastPossession])
+  
   const handleZoneClick = (row: number, col: number) => {
     if (!currentMatch.currentPossession) {
       // Usar evento customizado para notificação
@@ -77,36 +104,42 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
   return (
     <div className={cn(
       "relative rounded-xl overflow-hidden shadow-field",
-      isFullscreen 
-        ? "w-full h-full min-h-0 min-w-0 rounded-none" 
-        : "aspect-[16/10] w-full max-w-6xl mx-auto"
+      isFullscreen ? (
+        isSafariIPhone() && isLandscape 
+          ? "safari-field-absolute safari-field-bg rounded-none" 
+          : "w-full h-full min-h-0 min-w-0 rounded-none"
+      ) : "aspect-[16/10] w-full max-w-6xl mx-auto"
     )}>
-      {/* Imagem do campo como fundo */}
-      <div 
-        className={cn(
-          "absolute inset-0 bg-no-repeat bg-center",
-          isFullscreen ? "bg-cover" : "bg-contain"
-        )}
-        style={{
-          backgroundImage: 'url(/campov1-horizontal.png)',
-          ...(isFullscreen && {
-            backgroundSize: '100% 100%' // Força a imagem a preencher toda a área
-          })
-        }}
-      />
+      {/* Imagem do campo como fundo - apenas se não for Safari iPhone em landscape */}
+      {!(isSafariIPhone() && isLandscape && isFullscreen) && (
+        <div 
+          className={cn(
+            "absolute inset-0 bg-no-repeat bg-center",
+            isFullscreen ? "bg-cover" : "bg-contain"
+          )}
+          style={{
+            backgroundImage: 'url(/campov1-horizontal.png)',
+            ...(isFullscreen && {
+              backgroundSize: '100% 100%' // Força a imagem a preencher toda a área
+            })
+          }}
+        />
+      )}
       
       {/* Overlay sutil para melhor contraste */}
       <div className={cn(
         "absolute inset-0",
-        isFullscreen ? "bg-black/10" : "bg-black/5"
+        isFullscreen ? (
+          isSafariIPhone() && isLandscape ? "bg-black/5" : "bg-black/10"
+        ) : "bg-black/5"
       )} />
       
       {/* Grid de zonas 20x13 - ajustado para não recortar */}
       <div className={cn(
         "absolute grid grid-cols-20 grid-rows-13",
-        isFullscreen 
-          ? "inset-0" 
-          : "inset-2 md:inset-4"
+        isFullscreen ? (
+          isSafariIPhone() && isLandscape ? "inset-0" : "inset-0"
+        ) : "inset-2 md:inset-4"
       )}>
         {Array.from({ length: 260 }, (_, index) => {
           const row = Math.floor(index / 20)
@@ -128,7 +161,9 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
               {getZoneIntensity(row, col).total > 0 && (
                 <div className={cn(
                   "absolute bg-white rounded-full opacity-90 shadow-lg border border-gray-300",
-                  isFullscreen ? "top-0.5 right-0.5 w-2 h-2" : "top-0.5 right-0.5 w-1.5 h-1.5"
+                  isFullscreen ? (
+                    isSafariIPhone() && isLandscape ? "top-0.5 right-0.5 w-1.5 h-1.5" : "top-0.5 right-0.5 w-2 h-2"
+                  ) : "top-0.5 right-0.5 w-1.5 h-1.5"
                 )} />
               )}
             </button>
