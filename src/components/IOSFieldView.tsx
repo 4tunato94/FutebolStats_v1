@@ -572,6 +572,32 @@ export function IOSFieldView() {
                             {team.name} • {formatTime(action.timestamp)}
                           </div>
                         </div>
+                        <div className="flex space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              // Editar ação
+                              // TODO: Implementar edição de ação
+                              showNotification('Edição em desenvolvimento', 'info')
+                            }}
+                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              // Remover ação do histórico
+                              removeAction(action.id)
+                              showNotification('Ação removida', 'success')
+                            }}
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     )
                   })}
