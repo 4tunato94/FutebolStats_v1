@@ -63,6 +63,38 @@ input, select, textarea {
 .touch-target {
   min-height: 44px;
   min-width: 44px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Fullscreen optimizations */
+.fullscreen-field {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .ios-fullscreen {
+    /* Hide Safari UI in landscape */
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  .ios-field-container {
+    /* Prevent bounce scrolling */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 

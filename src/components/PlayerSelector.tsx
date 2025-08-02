@@ -12,7 +12,7 @@ interface PlayerSelectorProps {
 
 export function PlayerSelector({ team, action, onSelectPlayer, onCancel }: PlayerSelectorProps) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end">
+    <div className="fixed inset-0 z-60 bg-black/50 backdrop-blur-sm flex items-end">
       <div className="w-full bg-background rounded-t-3xl border-t border-border/50 animate-in slide-in-from-bottom-full duration-300">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">

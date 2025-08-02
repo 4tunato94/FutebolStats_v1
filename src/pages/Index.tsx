@@ -36,14 +36,15 @@ const Index = () => {
 
   if (appState === 'playing' && currentMatch) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col ios-field-container">
         <IOSHeader
           title="Partida"
           subtitle={`${currentMatch.teamA.name} vs ${currentMatch.teamB.name}`}
           onBack={endMatch}
+          className="z-40"
         />
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden relative">
           <IOSFieldView />
         </div>
       </div>

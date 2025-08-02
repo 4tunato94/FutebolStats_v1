@@ -82,7 +82,7 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: 'url(/image.png)',
+          backgroundImage: 'url(/campov1-horizontal.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

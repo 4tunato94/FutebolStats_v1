@@ -58,7 +58,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
       }
       
       // Se a ação muda a posse automaticamente, fechar o painel
-      if (actionType.changesPossession && onClose) {
+      if (onClose) {
         onClose()
       }
     }
@@ -101,7 +101,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
       setSelectedAction(null)
       
       // Se a ação muda a posse automaticamente, fechar o painel
-      if (selectedAction.changesPossession && onClose) {
+      if (onClose) {
         onClose()
       }
     }
