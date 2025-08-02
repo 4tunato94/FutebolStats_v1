@@ -5,12 +5,11 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  Menu,
-  X,
   Clock,
   Users,
   Zap,
-  Target
+  History,
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FieldGrid } from '@/components/FieldGrid'
@@ -22,7 +21,7 @@ export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession } = useFutebolStore()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
-  const [activePanel, setActivePanel] = useState<'timer' | 'possession' | 'actions' | null>(null)
+  const [activePanel, setActivePanel] = useState<'timer' | 'possession' | 'actions' | 'history' | null>(null)
   const [timer, setTimer] = useState(0)
 
   useEffect(() => {
@@ -84,10 +83,17 @@ export function IOSFieldView() {
     setShowSidebar(false)
   }
 
-  const openPanel = (panel: 'timer' | 'possession' | 'actions') => {
+  const openPanel = (panel: 'timer' | 'possession' | 'actions' | 'history') => {
     setActivePanel(panel)
     setShowSidebar(true)
   }
+
+  // Determinar qual time está com a posse para mostrar no botão
+  const currentPossessionTeam = currentMatch.currentPossession === currentMatch.teamA.id 
+    ? currentMatch.teamA 
+    : currentMatch.currentPossession === currentMatch.teamB.id 
+      ? currentMatch.teamB 
+      : null
 
   return (
     <div className={cn(
@@ -114,52 +120,44 @@ export function IOSFieldView() {
           </Button>
         </div>
 
-        {/* Timer Flutuante - Canto Superior Esquerdo */}
-        <div className="absolute top-4 left-4">
+        {/* Cronômetro Central */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2">
-            <div className="text-2xl font-mono font-bold text-center">
+            <div className="text-xl font-mono font-bold text-center">
               {formatTime(timer)}
             </div>
           </div>
         </div>
-
-        {/* Indicador de Posse - Centro Superior */}
-        {currentMatch.currentPossession && (
-          <div className="absolute top-3 left-1/2 transform -translate-x-1/2">
-            <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2 flex items-center space-x-2">
-              <img 
-                src={currentMatch.currentPossession === currentMatch.teamA.id 
-                  ? currentMatch.teamA.logoUrl 
-                  : currentMatch.teamB.logoUrl
-                } 
-                alt="Team logo"
-                className="w-5 h-5 object-contain"
-              />
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Botões Laterais - Esquerda */}
-      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 translate-y-8 z-40 flex flex-col space-y-3">
+      {/* Botões Laterais - Canto Inferior Esquerdo */}
+      <div className="absolute left-4 bottom-4 z-40 flex flex-col space-y-3">
         {/* Cronômetro */}
         <Button
           variant={activePanel === 'timer' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('timer')}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
         >
-          <Clock className="h-4 w-4" />
+          <Clock className="h-5 w-5" />
         </Button>
         
-        {/* Posse de Bola */}
+        {/* Posse de Bola - Mostra logo do time selecionado */}
         <Button
           variant={activePanel === 'possession' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('possession')}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1"
         >
-          <Users className="h-4 w-4" />
+          {currentPossessionTeam ? (
+            <img 
+              src={currentPossessionTeam.logoUrl} 
+              alt={`${currentPossessionTeam.name} logo`}
+              className="w-8 h-8 object-contain"
+            />
+          ) : (
+            <Users className="h-5 w-5" />
+          )}
         </Button>
         
         {/* Registro de Ação */}
@@ -167,24 +165,35 @@ export function IOSFieldView() {
           variant={activePanel === 'actions' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('actions')}
-          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
         >
-          <Zap className="h-4 w-4" />
+          <Zap className="h-5 w-5" />
+        </Button>
+
+        {/* Histórico de Ações */}
+        <Button
+          variant={activePanel === 'history' ? 'default' : 'outline'}
+          size="icon"
+          onClick={() => openPanel('history')}
+          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+        >
+          <History className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Painel Lateral Direito */}
+      {/* Painel Lateral Direito - Menor */}
       <div className={cn(
-        "fixed right-0 top-0 h-full w-72 sm:w-80 bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
+        "fixed right-0 top-0 h-full w-64 sm:w-72 bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
         showSidebar ? "translate-x-0" : "translate-x-full"
       )}>
         {/* Header do Painel */}
         <div className="p-3 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">
+            <h2 className="text-sm font-semibold">
               {activePanel === 'timer' && 'Cronômetro'}
               {activePanel === 'possession' && 'Posse de Bola'}
               {activePanel === 'actions' && 'Registrar Ação'}
+              {activePanel === 'history' && 'Histórico de Ações'}
             </h2>
             <Button
               variant="ghost"
@@ -193,9 +202,9 @@ export function IOSFieldView() {
                 setShowSidebar(false)
                 setActivePanel(null)
               }}
-              className="h-7 w-7 rounded-full"
+              className="h-6 w-6 rounded-full"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         </div>
@@ -205,11 +214,11 @@ export function IOSFieldView() {
           {activePanel === 'timer' && (
             <div className="space-y-4">
               <div className="text-center">
-                <div className="text-2xl font-mono font-bold mb-3">
+                <div className="text-xl font-mono font-bold mb-3">
                   {formatTime(timer)}
                 </div>
                 
-                <div className="flex justify-center space-x-3">
+                <div className="flex justify-center space-x-2">
                   <Button
                     variant="outline"
                     size="icon"
@@ -217,9 +226,9 @@ export function IOSFieldView() {
                     className="h-10 w-10 rounded-full touch-target"
                   >
                     {currentMatch.isPlaying ? (
-                      <Pause className="h-5 w-5" />
+                      <Pause className="h-4 w-4" />
                     ) : (
-                      <Play className="h-5 w-5" />
+                      <Play className="h-4 w-4" />
                     )}
                   </Button>
                   
@@ -229,7 +238,7 @@ export function IOSFieldView() {
                     onClick={resetTimer}
                     className="h-10 w-10 rounded-full touch-target"
                   >
-                    <RotateCcw className="h-5 w-5" />
+                    <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -237,13 +246,13 @@ export function IOSFieldView() {
           )}
 
           {activePanel === 'possession' && (
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-3">
+              <div className="flex flex-col items-center space-y-3">
                 <Button
                   variant="outline"
                   onClick={() => handlePossessionSelect(currentMatch.teamA.id)}
                   className={cn(
-                    "w-full h-16 flex items-center justify-center p-3 touch-target",
+                    "w-20 h-20 flex items-center justify-center p-2 touch-target rounded-2xl",
                     currentMatch.currentPossession === currentMatch.teamA.id && 
                     "ring-2 ring-primary bg-primary/10"
                   )}
@@ -251,7 +260,7 @@ export function IOSFieldView() {
                   <img 
                     src={currentMatch.teamA.logoUrl} 
                     alt={`${currentMatch.teamA.name} logo`}
-                    className="w-10 h-10 object-contain"
+                    className="w-12 h-12 object-contain"
                   />
                 </Button>
                 
@@ -259,7 +268,7 @@ export function IOSFieldView() {
                   variant="outline"
                   onClick={() => handlePossessionSelect(currentMatch.teamB.id)}
                   className={cn(
-                    "w-full h-16 flex items-center justify-center p-3 touch-target",
+                    "w-20 h-20 flex items-center justify-center p-2 touch-target rounded-2xl",
                     currentMatch.currentPossession === currentMatch.teamB.id && 
                     "ring-2 ring-primary bg-primary/10"
                   )}
@@ -267,7 +276,7 @@ export function IOSFieldView() {
                   <img 
                     src={currentMatch.teamB.logoUrl} 
                     alt={`${currentMatch.teamB.name} logo`}
-                    className="w-10 h-10 object-contain"
+                    className="w-12 h-12 object-contain"
                   />
                 </Button>
               </div>
@@ -279,13 +288,55 @@ export function IOSFieldView() {
               {currentMatch.currentPossession ? (
                 <ActionPanel onClose={handleActionComplete} />
               ) : (
-                <div className="text-center py-8">
-                  <Target className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">
+                <div className="text-center py-6">
+                  <Zap className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
                     Selecione a posse de bola primeiro
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {activePanel === 'history' && (
+            <div className="space-y-3">
+              <div className="text-center py-6">
+                <History className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground mb-3">
+                  Últimas ações registradas
+                </p>
+              </div>
+              
+              {/* Lista das últimas 10 ações */}
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {currentMatch.actions
+                  .slice(-10)
+                  .reverse()
+                  .map((action, index) => {
+                    const team = action.teamId === currentMatch.teamA.id ? currentMatch.teamA : currentMatch.teamB
+                    return (
+                      <div key={action.id} className="flex items-center space-x-2 p-2 rounded bg-muted/30 text-xs">
+                        <img 
+                          src={team.logoUrl} 
+                          alt={team.name}
+                          className="w-4 h-4 object-contain"
+                        />
+                        <span className="flex-1">
+                          {action.actionName || (action.type === 'possession' ? 'Posse' : 'Ação')}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {formatTime(action.timestamp)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                
+                {currentMatch.actions.length === 0 && (
+                  <p className="text-center text-xs text-muted-foreground py-4">
+                    Nenhuma ação registrada ainda
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>
