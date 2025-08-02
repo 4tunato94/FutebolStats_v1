@@ -1,4 +1,3 @@
-
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Team, Match, GameAction, ActionType, AppState, SavedGame, GameStats } from '@/types/futebol'
@@ -184,6 +183,13 @@ export const useFutebolStore = create<FutebolState>()(
       
       deleteGame: (gameId) => set((state) => ({
         savedGames: state.savedGames.filter(game => game.id !== gameId)
+      })),
+      
+      removeAction: (actionId) => set((state) => ({
+        currentMatch: state.currentMatch ? {
+          ...state.currentMatch,
+          actions: state.currentMatch.actions.filter(action => action.id !== actionId)
+        } : null
       })),
       
       updateGameAction: (gameId, actionId, updates) => set((state) => {
