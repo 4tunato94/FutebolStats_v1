@@ -24,33 +24,86 @@ interface Notification {
 
 export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession } = useFutebolStore()
-  const [isFullscreen, setIsFullscreen] = useState(true)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
   const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
   const [timer, setTimer] = useState(0)
   const [lastClickTime, setLastClickTime] = useState(0)
   const [notifications, setNotifications] = useState<Notification[]>([])
+  const [isLandscape, setIsLandscape] = useState(false)
 
-  // Entrar em fullscreen automaticamente quando o componente monta
+  // Detectar se é Safari no iPhone
+  const isSafariIPhone = () => {
+    const userAgent = navigator.userAgent
+    return /iPhone/.test(userAgent) && /Safari/.test(userAgent) && !/Chrome/.test(userAgent)
+  }
+
+  // Detectar orientação
   useEffect(() => {
-    const enterFullscreen = async () => {
+    const checkOrientation = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight)
+    }
+
+    checkOrientation()
+    window.addEventListener('orientationchange', checkOrientation)
+    window.addEventListener('resize', checkOrientation)
+
+    return () => {
+      window.removeEventListener('orientationchange', checkOrientation)
+      window.removeEventListener('resize', checkOrientation)
+    }
+  }, [])
+
+  // Configurar fullscreen e orientação quando o componente monta
+  useEffect(() => {
+    const setupFullscreen = async () => {
       try {
-        const docEl = document.documentElement
-        if (docEl.requestFullscreen) {
-          await docEl.requestFullscreen()
-        } else if ((docEl as any).webkitRequestFullscreen) {
-          await (docEl as any).webkitRequestFullscreen()
-        } else if ((docEl as any).mozRequestFullScreen) {
-          await (docEl as any).mozRequestFullScreen()
-        } else if ((docEl as any).msRequestFullscreen) {
-          await (docEl as any).msRequestFullscreen()
+        if (isSafariIPhone()) {
+          // Para Safari iPhone, usar viewport meta e CSS
+          const viewport = document.querySelector('meta[name="viewport"]')
+          if (viewport) {
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
+          }
+          
+          // Forçar orientação paisagem no Safari iPhone
+          if ('screen' in window && 'orientation' in (window.screen as any)) {
+            try {
+              await (window.screen as any).orientation.lock('landscape')
+            } catch (e) {
+              console.log('Orientation lock not supported')
+            }
+          }
+          
+          // Simular fullscreen com CSS
+          document.body.style.overflow = 'hidden'
+          setIsFullscreen(true)
+        } else {
+          // Para outros navegadores, usar fullscreen API
+          const docEl = document.documentElement
+          if (docEl.requestFullscreen) {
+            await docEl.requestFullscreen()
+          } else if ((docEl as any).webkitRequestFullscreen) {
+            await (docEl as any).webkitRequestFullscreen()
+          } else if ((docEl as any).mozRequestFullScreen) {
+            await (docEl as any).mozRequestFullScreen()
+          } else if ((docEl as any).msRequestFullscreen) {
+            await (docEl as any).msRequestFullscreen()
+          }
         }
       } catch (error) {
-        console.warn('Auto fullscreen failed:', error)
+        console.warn('Fullscreen setup failed:', error)
+        // Fallback: simular fullscreen
+        document.body.style.overflow = 'hidden'
+        setIsFullscreen(true)
       }
     }
 
-    enterFullscreen()
+    setupFullscreen()
+
+    return () => {
+      // Cleanup
+      document.body.style.overflow = ''
+    }
   }, [])
 
   // Sincronizar estado fullscreen com o navegador
@@ -224,25 +277,47 @@ export function IOSFieldView() {
   }
 
   const exitAnalysis = () => {
-    // Primeiro sair do fullscreen se estiver ativo
-    if (document.fullscreenElement) {
-      try {
-        if (document.exitFullscreen) {
-          document.exitFullscreen()
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen()
-        } else if ((document as any).mozCancelFullScreen) {
-          (document as any).mozCancelFullScreen()
-        } else if ((document as any).msExitFullscreen) {
-          (document as any).msExitFullscreen()
+    try {
+      if (isSafariIPhone()) {
+        // Para Safari iPhone, restaurar viewport e orientação
+        const viewport = document.querySelector('meta[name="viewport"]')
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
         }
-      } catch (error) {
-        console.warn('Exit fullscreen failed:', error)
+        
+        // Restaurar overflow
+        document.body.style.overflow = ''
+        
+        // Tentar desbloquear orientação
+        if ('screen' in window && 'orientation' in (window.screen as any)) {
+          try {
+            (window.screen as any).orientation.unlock()
+          } catch (e) {
+            console.log('Orientation unlock not supported')
+          }
+        }
+      } else {
+        // Para outros navegadores, sair do fullscreen
+        if (document.fullscreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen()
+          } else if ((document as any).webkitExitFullscreen) {
+            (document as any).webkitExitFullscreen()
+          } else if ((document as any).mozCancelFullScreen) {
+            (document as any).mozCancelFullScreen()
+          } else if ((document as any).msExitFullscreen) {
+            (document as any).msExitFullscreen()
+          }
+        }
       }
+    } catch (error) {
+      console.warn('Exit fullscreen failed:', error)
     }
     
-    // Depois voltar para a tela principal
-    window.history.back()
+    // Voltar para a tela principal
+    setTimeout(() => {
+      window.history.back()
+    }, 100)
   }
 
   const handlePossessionSelect = (teamId: string) => {
@@ -291,12 +366,14 @@ export function IOSFieldView() {
   return (
     <div className={cn(
       "flex h-full relative",
-      isFullscreen ? "fixed inset-0 z-50 bg-black safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden"
+      isFullscreen ? "fixed inset-0 z-50 bg-black safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden",
+      isSafariIPhone() && isFullscreen && "safari-iphone-fullscreen"
     )}>
       {/* Campo Principal */}
       <div className={cn(
         "flex-1 relative flex items-center justify-center",
-        isFullscreen && "w-screen h-screen p-2"
+        isFullscreen && "w-screen h-screen p-2",
+        isSafariIPhone() && isFullscreen && isLandscape && "safari-landscape-field"
       )}>
         <FieldGrid isFullscreen={isFullscreen} />
         
