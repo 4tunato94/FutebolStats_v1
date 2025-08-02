@@ -24,12 +24,34 @@ interface Notification {
 
 export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession } = useFutebolStore()
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(true)
   const [showSidebar, setShowSidebar] = useState(false)
   const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
   const [timer, setTimer] = useState(0)
   const [lastClickTime, setLastClickTime] = useState(0)
   const [notifications, setNotifications] = useState<Notification[]>([])
+
+  // Entrar em fullscreen automaticamente quando o componente monta
+  useEffect(() => {
+    const enterFullscreen = async () => {
+      try {
+        const docEl = document.documentElement
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen()
+        } else if ((docEl as any).webkitRequestFullscreen) {
+          await (docEl as any).webkitRequestFullscreen()
+        } else if ((docEl as any).mozRequestFullScreen) {
+          await (docEl as any).mozRequestFullScreen()
+        } else if ((docEl as any).msRequestFullscreen) {
+          await (docEl as any).msRequestFullscreen()
+        }
+      } catch (error) {
+        console.warn('Auto fullscreen failed:', error)
+      }
+    }
+
+    enterFullscreen()
+  }, [])
 
   // Sincronizar estado fullscreen com o navegador
   useEffect(() => {
@@ -201,6 +223,28 @@ export function IOSFieldView() {
     }
   }
 
+  const exitAnalysis = () => {
+    // Primeiro sair do fullscreen se estiver ativo
+    if (document.fullscreenElement) {
+      try {
+        if (document.exitFullscreen) {
+          document.exitFullscreen()
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen()
+        } else if ((document as any).mozCancelFullScreen) {
+          (document as any).mozCancelFullScreen()
+        } else if ((document as any).msExitFullscreen) {
+          (document as any).msExitFullscreen()
+        }
+      } catch (error) {
+        console.warn('Exit fullscreen failed:', error)
+      }
+    }
+    
+    // Depois voltar para a tela principal
+    window.history.back()
+  }
+
   const handlePossessionSelect = (teamId: string) => {
     setPossession(teamId)
   }
@@ -284,18 +328,15 @@ export function IOSFieldView() {
         )}
         
         {/* Controles Flutuantes - Canto Superior Direito */}
-        <div className="absolute top-4 right-4 flex items-center space-x-2">
+        {/* Botão de Sair - Canto Inferior Direito */}
+        <div className="absolute bottom-4 right-4">
           <Button
-            variant="outline"
+            variant="destructive"
             size="icon"
-            onClick={toggleFullscreen}
-            className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
+            onClick={exitAnalysis}
+            className="h-12 w-12 rounded-full bg-destructive/90 backdrop-blur-sm border-destructive/50 touch-target shadow-lg active:scale-95 transition-transform hover:bg-destructive"
           >
-            {isFullscreen ? (
-              <Minimize2 className="h-5 w-5" />
-            ) : (
-              <Maximize2 className="h-5 w-5" />
-            )}
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
