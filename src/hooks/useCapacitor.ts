@@ -3,7 +3,7 @@ import { Capacitor } from '@capacitor/core'
 import { App } from '@capacitor/app'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { SplashScreen } from '@capacitor/splash-screen'
-import { ScreenOrientation, OrientationType } from '@capacitor/screen-orientation'
+import { ScreenOrientation } from '@capacitor/screen-orientation'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 
 export function useCapacitor() {
@@ -22,7 +22,7 @@ export function useCapacitor() {
           await StatusBar.setBackgroundColor({ color: '#2d5016' })
           
           // Forçar orientação paisagem
-          await ScreenOrientation.lock({ orientation: OrientationType.Landscape })
+          await ScreenOrientation.lock({ orientation: ScreenOrientation.OrientationType.Landscape })
           
           // Esconder splash screen
           await SplashScreen.hide()
@@ -61,7 +61,7 @@ export function useCapacitor() {
     }
   }
 
-  const lockOrientation = async (orientation: OrientationType) => {
+  const lockOrientation = async (orientation: any) => {
     if (isNative) {
       try {
         await ScreenOrientation.lock({ orientation })
