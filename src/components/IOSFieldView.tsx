@@ -28,7 +28,7 @@ interface Notification {
 }
 
 export function IOSFieldView() {
-  const { currentMatch, togglePlayPause, updateTimer, setPossession, removeAction } = useFutebolStore()
+  const { currentMatch, togglePlayPause, updateTimer, setPossession, removeAction, actionTypes } = useFutebolStore()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSidebar, setShowSidebar] = useState(false)
   const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
