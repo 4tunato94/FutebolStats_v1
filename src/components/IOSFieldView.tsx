@@ -72,171 +72,27 @@ export function IOSFieldView() {
   // Configurar fullscreen e orientação quando o componente monta
   useEffect(() => {
     const setupFullscreen = async () => {
-      // Forçar orientação paisagem imediatamente
-      if (isSafariIPhone()) {
-        // Tentar bloquear orientação paisagem primeiro
-        if ('screen' in window && 'orientation' in (window.screen as any)) {
-          try {
-            await (window.screen as any).orientation.lock('landscape')
-          } catch (e) {
-            console.log('Orientation lock not supported, using CSS fallback')
-          }
-        }
-        
-        // Forçar rotação via CSS se necessário
-        if (window.innerHeight > window.innerWidth) {
-          document.body.style.transform = 'rotate(90deg)'
-          document.body.style.transformOrigin = 'center center'
-          document.body.style.width = '100vh'
-          document.body.style.height = '100vw'
-        }
-      }
-      
       try {
-        if (isSafariIPhone()) {
-          // Para Safari iPhone, usar viewport meta e CSS
-          const viewport = document.querySelector('meta[name="viewport"]')
-          if (viewport) {
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=landscape, minimal-ui')
-          }
-          
-          // Adicionar meta para status bar
-          let statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
-          if (!statusBarMeta) {
-            statusBarMeta = document.createElement('meta')
-            statusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style')
-            document.head.appendChild(statusBarMeta)
-          }
-          statusBarMeta.setAttribute('content', 'black-translucent')
-          
-          // Adicionar meta para web app capable
-          let webAppMeta = document.querySelector('meta[name="apple-mobile-web-app-capable"]')
-          if (!webAppMeta) {
-            webAppMeta = document.createElement('meta')
-            webAppMeta.setAttribute('name', 'apple-mobile-web-app-capable')
-            document.head.appendChild(webAppMeta)
-          }
-          webAppMeta.setAttribute('content', 'yes')
-          
-          // Adicionar meta para esconder UI do Safari
-          let formatDetectionMeta = document.querySelector('meta[name="format-detection"]')
-          if (!formatDetectionMeta) {
-            formatDetectionMeta = document.createElement('meta')
-            formatDetectionMeta.setAttribute('name', 'format-detection')
-            document.head.appendChild(formatDetectionMeta)
-          }
-          formatDetectionMeta.setAttribute('content', 'telephone=no')
-          
-          // Adicionar meta para standalone mode
-          let standaloneMeta = document.querySelector('meta[name="mobile-web-app-capable"]')
-          if (!standaloneMeta) {
-            standaloneMeta = document.createElement('meta')
-            standaloneMeta.setAttribute('name', 'mobile-web-app-capable')
-            document.head.appendChild(standaloneMeta)
-          }
-          standaloneMeta.setAttribute('content', 'yes')
-          
-          // Simular fullscreen com CSS
-          document.body.style.overflow = 'hidden'
-          document.body.style.position = 'fixed'
-          document.body.style.width = '100vw'
-          document.body.style.height = '100vh'
-          document.body.style.height = '-webkit-fill-available'
-          document.body.style.top = '0'
-          document.body.style.left = '0'
-          document.body.style.margin = '0'
-          document.body.style.padding = '0'
-          document.body.style.background = '#2d5016'
-          
-          // Função para esconder barra de endereços
-          const hideAddressBar = () => {
-            window.scrollTo(0, 1)
-            document.body.scrollTop = 1
-            if (document.documentElement) {
-              document.documentElement.scrollTop = 1
-            }
-            // Forçar reflow
-            document.body.offsetHeight
-          }
-          
-          // Esconder imediatamente
-          hideAddressBar()
-          
-          // Múltiplas tentativas com intervalos crescentes
-          setTimeout(hideAddressBar, 50)
-          setTimeout(hideAddressBar, 100)
-          setTimeout(hideAddressBar, 200)
-          setTimeout(hideAddressBar, 500)
-          setTimeout(hideAddressBar, 1000)
-          setTimeout(hideAddressBar, 2000)
-          
-          // Listeners para manter fullscreen
-          window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-              // Reconfigurar após mudança de orientação
-              document.body.style.width = '100vw'
-              document.body.style.height = '100vh'
-              document.body.style.height = '-webkit-fill-available'
-            }, 50)
-            setTimeout(hideAddressBar, 100)
-            setTimeout(hideAddressBar, 500)
-            setTimeout(hideAddressBar, 1000)
-          })
-          
-          window.addEventListener('resize', () => {
-            setTimeout(hideAddressBar, 100)
-            setTimeout(hideAddressBar, 300)
-          })
-          
-          // Listener para scroll (prevenir)
-          window.addEventListener('scroll', (e) => {
-            e.preventDefault()
-            hideAddressBar()
-          }, { passive: false })
-          
-          // Listener para touchmove (prevenir scroll)
-          document.addEventListener('touchmove', (e) => {
-            if (e.target === document.body) {
-              e.preventDefault()
-            }
-          }, { passive: false })
-          
-          setIsFullscreen(true)
-        } else {
-          // Para outros navegadores, usar fullscreen API
-          const docEl = document.documentElement
-          if (docEl.requestFullscreen) {
-            await docEl.requestFullscreen()
-          } else if ((docEl as any).webkitRequestFullscreen) {
-            await (docEl as any).webkitRequestFullscreen()
-          } else if ((docEl as any).mozRequestFullScreen) {
-            await (docEl as any).mozRequestFullScreen()
-          } else if ((docEl as any).msRequestFullscreen) {
-            await (docEl as any).msRequestFullscreen()
-          }
+        // Tentar fullscreen API primeiro
+        const docEl = document.documentElement
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen()
+        } else if ((docEl as any).webkitRequestFullscreen) {
+          await (docEl as any).webkitRequestFullscreen()
+        } else if ((docEl as any).mozRequestFullScreen) {
+          await (docEl as any).mozRequestFullScreen()
+        } else if ((docEl as any).msRequestFullscreen) {
+          await (docEl as any).msRequestFullscreen()
         }
       } catch (error) {
         console.warn('Fullscreen setup failed:', error)
-        // Fallback: simular fullscreen
-        document.body.style.overflow = 'hidden'
-        document.body.style.position = 'fixed'
-        document.body.style.width = '100vw'
-        document.body.style.height = '100vh'
-        setIsFullscreen(true)
       }
+      
+      // Sempre definir como fullscreen para dispositivos móveis
+      setIsFullscreen(true)
     }
 
     setupFullscreen()
-
-    return () => {
-      // Cleanup
-      document.body.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
-      document.body.style.height = ''
-      document.body.style.top = ''
-      document.body.style.left = ''
-    }
   }, [])
 
   // Sincronizar estado fullscreen com o navegador

@@ -16,42 +16,81 @@ import { IOSFieldView } from '@/components/IOSFieldView'
 const Index = () => {
   const { appState, currentMatch, endMatch, setAppState } = useFutebolStore()
   const [activeTab, setActiveTab] = useState('setup')
+  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false)
   
-  // Detectar Safari iPhone e forçar fullscreen/landscape
+  // Detectar dispositivo móvel e configurar fullscreen
   useEffect(() => {
-    const isSafariIPhone = () => {
+    const isMobileDevice = () => {
       const userAgent = navigator.userAgent
-      const isIPhone = /iPhone/.test(userAgent)
-      const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent)
-      return isIPhone && isSafari
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
     }
     
-    if (isSafariIPhone()) {
-      // Aplicar classe para forçar fullscreen
-      document.body.classList.add('safari-auto-fullscreen', 'safari-no-scroll')
+    const setupMobileFullscreen = async () => {
+      if (!isMobileDevice()) return
       
-      // Configurar viewport para fullscreen
+      // Configurar viewport dinamicamente
       const viewport = document.querySelector('meta[name="viewport"]')
       if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui')
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui, shrink-to-fit=no')
       }
       
-      // Tentar forçar orientação paisagem
-      if ('screen' in window && 'orientation' in (window.screen as any)) {
-        try {
-          (window.screen as any).orientation.lock('landscape').catch(() => {
-            console.log('Orientation lock not supported')
-          })
-        } catch (e) {
-          console.log('Orientation API not available')
-        }
+      // Aplicar estilos de fullscreen
+      document.documentElement.style.height = '100vh'
+      document.documentElement.style.height = '-webkit-fill-available'
+      document.body.style.height = '100vh'
+      document.body.style.height = '-webkit-fill-available'
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = '0'
+      document.body.style.left = '0'
+      document.body.style.margin = '0'
+      document.body.style.padding = '0'
+      
+      // Esconder barra de endereços
+      const hideAddressBar = () => {
+        setTimeout(() => {
+          window.scrollTo(0, 1)
+          document.body.scrollTop = 1
+        }, 0)
       }
       
-      // Cleanup ao desmontar
+      hideAddressBar()
+      
+      // Múltiplas tentativas
+      setTimeout(hideAddressBar, 100)
+      setTimeout(hideAddressBar, 300)
+      setTimeout(hideAddressBar, 500)
+      setTimeout(hideAddressBar, 1000)
+      
+      // Listeners para manter fullscreen
+      const handleOrientationChange = () => {
+        setTimeout(() => {
+          hideAddressBar()
+          document.body.style.height = '100vh'
+          document.body.style.height = '-webkit-fill-available'
+        }, 100)
+      }
+      
+      window.addEventListener('orientationchange', handleOrientationChange)
+      window.addEventListener('resize', hideAddressBar)
+      
+      setIsMobileFullscreen(true)
+      
       return () => {
-        document.body.classList.remove('safari-auto-fullscreen', 'safari-no-scroll')
+        window.removeEventListener('orientationchange', handleOrientationChange)
+        window.removeEventListener('resize', hideAddressBar)
+        document.documentElement.style.height = ''
+        document.body.style.height = ''
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
       }
     }
+    
+    setupMobileFullscreen()
   }, [])
 
   // Prevent zoom on iOS
@@ -73,7 +112,7 @@ const Index = () => {
 
   if (appState === 'playing' && currentMatch) {
     return (
-      <div className="min-h-screen bg-background flex flex-col ios-field-container">
+      <div className={`min-h-screen bg-background flex flex-col ios-field-container ${isMobileFullscreen ? 'mobile-fullscreen' : ''}`}>
         <IOSHeader
           title="Partida"
           subtitle={`${currentMatch.teamA.name} vs ${currentMatch.teamB.name}`}
@@ -89,7 +128,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={`min-h-screen bg-background flex flex-col ${isMobileFullscreen ? 'mobile-fullscreen' : ''}`}>
       <IOSHeader
         title="⚽ FutebolStats"
         subtitle="Análise Tática em Tempo Real"
