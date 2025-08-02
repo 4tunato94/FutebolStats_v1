@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Play, Users, ChevronRight } from 'lucide-react-native';
-import { useFutebolStore } from '@/stores/futebolStore';
+import { useFutebolStore } from '../../stores/futebolStore';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {

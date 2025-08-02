@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { History, Clock, Users, Zap } from 'lucide-react-native';
-import { useFutebolStore } from '@/stores/futebolStore';
+import { useFutebolStore } from '../../stores/futebolStore';
 
 export default function HistoryScreen() {
   const { currentMatch } = useFutebolStore();

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Play, Pause, Square, Clock } from 'lucide-react-native';
-import { useFutebolStore } from '@/stores/futebolStore';
+import { useFutebolStore } from '../stores/futebolStore';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
