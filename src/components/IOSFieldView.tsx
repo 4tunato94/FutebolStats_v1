@@ -48,7 +48,9 @@ export function IOSFieldView() {
   // Detectar se é Safari no iPhone
   const isSafariIPhone = () => {
     const userAgent = navigator.userAgent
-    return /iPhone/.test(userAgent) && /Safari/.test(userAgent) && !/Chrome/.test(userAgent)
+    const isIPhone = /iPhone/.test(userAgent)
+    const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent)
+    return isIPhone && isSafari
   }
 
   // Detectar orientação
@@ -75,8 +77,26 @@ export function IOSFieldView() {
           // Para Safari iPhone, usar viewport meta e CSS
           const viewport = document.querySelector('meta[name="viewport"]')
           if (viewport) {
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
+            viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=landscape')
           }
+          
+          // Adicionar meta para status bar
+          let statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+          if (!statusBarMeta) {
+            statusBarMeta = document.createElement('meta')
+            statusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style')
+            document.head.appendChild(statusBarMeta)
+          }
+          statusBarMeta.setAttribute('content', 'black-translucent')
+          
+          // Adicionar meta para web app capable
+          let webAppMeta = document.querySelector('meta[name="apple-mobile-web-app-capable"]')
+          if (!webAppMeta) {
+            webAppMeta = document.createElement('meta')
+            webAppMeta.setAttribute('name', 'apple-mobile-web-app-capable')
+            document.head.appendChild(webAppMeta)
+          }
+          webAppMeta.setAttribute('content', 'yes')
           
           // Forçar orientação paisagem no Safari iPhone
           if ('screen' in window && 'orientation' in (window.screen as any)) {
@@ -89,6 +109,17 @@ export function IOSFieldView() {
           
           // Simular fullscreen com CSS
           document.body.style.overflow = 'hidden'
+          document.body.style.position = 'fixed'
+          document.body.style.width = '100vw'
+          document.body.style.height = '100vh'
+          document.body.style.top = '0'
+          document.body.style.left = '0'
+          
+          // Esconder a barra de endereços do Safari
+          window.scrollTo(0, 1)
+          setTimeout(() => window.scrollTo(0, 1), 100)
+          setTimeout(() => window.scrollTo(0, 1), 500)
+          
           setIsFullscreen(true)
         } else {
           // Para outros navegadores, usar fullscreen API
@@ -107,6 +138,9 @@ export function IOSFieldView() {
         console.warn('Fullscreen setup failed:', error)
         // Fallback: simular fullscreen
         document.body.style.overflow = 'hidden'
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100vw'
+        document.body.style.height = '100vh'
         setIsFullscreen(true)
       }
     }
@@ -116,6 +150,11 @@ export function IOSFieldView() {
     return () => {
       // Cleanup
       document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.height = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
     }
   }, [])
 
@@ -295,11 +334,16 @@ export function IOSFieldView() {
         // Para Safari iPhone, restaurar viewport e orientação
         const viewport = document.querySelector('meta[name="viewport"]')
         if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=portrait')
         }
         
         // Restaurar overflow
         document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+        document.body.style.height = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
         
         // Tentar desbloquear orientação
         if ('screen' in window && 'orientation' in (window.screen as any)) {
@@ -418,19 +462,24 @@ export function IOSFieldView() {
     <div className={cn(
       "flex h-full relative",
       isFullscreen ? "fixed inset-0 z-50 bg-black safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden",
-      isSafariIPhone() && isFullscreen && "safari-iphone-fullscreen"
+      isSafariIPhone() && isFullscreen && "safari-iphone-fullscreen safari-force-fullscreen",
+      isSafariIPhone() && isFullscreen && isLandscape && "landscape-optimized"
     )}>
       {/* Campo Principal */}
       <div className={cn(
         "flex-1 relative flex items-center justify-center",
         isFullscreen && "w-screen h-screen p-0",
-        isSafariIPhone() && isFullscreen && isLandscape && "safari-landscape-field"
+        isSafariIPhone() && isFullscreen && isLandscape && "safari-landscape-field",
+        isSafariIPhone() && "notch-safe-left notch-safe-right"
       )}>
         <FieldGrid isFullscreen={isFullscreen} />
         
         {/* Sistema de Notificações Customizado */}
         {notifications.length > 0 && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 pointer-events-none">
+          <div className={cn(
+            "fixed left-1/2 transform -translate-x-1/2 z-50 space-y-2 pointer-events-none",
+            isSafariIPhone() && isLandscape ? "top-2" : "top-4"
+          )}>
             {notifications.map((notification) => (
               <div
                 key={notification.id}
@@ -457,12 +506,18 @@ export function IOSFieldView() {
         
         {/* Controles Flutuantes - Canto Superior Direito */}
         {/* Botão de Sair - Canto Inferior Direito */}
-        <div className="absolute bottom-4 right-4">
+        <div className={cn(
+          "absolute right-4",
+          isSafariIPhone() && isLandscape ? "bottom-2" : "bottom-4"
+        )}>
           <Button
             variant="destructive"
             size="icon"
             onClick={exitAnalysis}
-            className="h-12 w-12 rounded-full bg-destructive/90 backdrop-blur-sm border-destructive/50 touch-target shadow-lg active:scale-95 transition-transform hover:bg-destructive"
+            className={cn(
+              "rounded-full bg-destructive/90 backdrop-blur-sm border-destructive/50 touch-target shadow-lg active:scale-95 transition-transform hover:bg-destructive",
+              isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+            )}
           >
             <X className="h-5 w-5" />
           </Button>
@@ -471,10 +526,13 @@ export function IOSFieldView() {
         {/* Cronômetro Central */}
         <div className={cn(
           "absolute left-1/2 transform -translate-x-1/2 pointer-events-none z-30",
-          isFullscreen ? "top-4" : "top-2"
+          isFullscreen ? (isSafariIPhone() && isLandscape ? "top-2" : "top-4") : "top-2"
         )}>
           <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2">
-            <div className="text-sm font-mono font-bold text-center">
+            <div className={cn(
+              "font-mono font-bold text-center",
+              isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+            )}>
               {formatTime(timer)}
             </div>
           </div>
@@ -482,13 +540,19 @@ export function IOSFieldView() {
       </div>
 
       {/* Botões Laterais - Canto Inferior Esquerdo */}
-      <div className="absolute left-4 bottom-4 z-40 flex space-x-3">
+      <div className={cn(
+        "absolute left-4 z-40 flex",
+        isSafariIPhone() && isLandscape ? "bottom-2 space-x-2" : "bottom-4 space-x-3"
+      )}>
         {/* Cronômetro */}
         <Button
           variant="outline"
           size="icon"
           onClick={handleTimerClick}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
+          className={cn(
+            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
+            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+          )}
         >
           <Clock className="h-5 w-5" />
         </Button>
@@ -498,13 +562,19 @@ export function IOSFieldView() {
           variant="outline"
           size="icon"
           onClick={togglePossession}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1 active:scale-95 transition-transform"
+          className={cn(
+            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1 active:scale-95 transition-transform",
+            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+          )}
         >
           {currentPossessionTeam ? (
             <img 
               src={currentPossessionTeam.logoUrl} 
               alt={`${currentPossessionTeam.name} logo`}
-              className="w-7 h-7 object-contain"
+              className={cn(
+                "object-contain",
+                isSafariIPhone() && isLandscape ? "w-6 h-6" : "w-7 h-7"
+              )}
             />
           ) : (
             <Users className="h-5 w-5" />
@@ -516,7 +586,10 @@ export function IOSFieldView() {
           variant={activePanel === 'actions' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('actions')}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
+          className={cn(
+            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
+            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+          )}
         >
           <Zap className="h-5 w-5" />
         </Button>
@@ -526,7 +599,10 @@ export function IOSFieldView() {
           variant={activePanel === 'history' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('history')}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform"
+          className={cn(
+            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
+            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+          )}
         >
           <History className="h-5 w-5" />
         </Button>
@@ -534,13 +610,17 @@ export function IOSFieldView() {
 
       {/* Painel Lateral Direito - Menor */}
       <div className={cn(
-        "fixed right-0 top-0 h-full w-56 sm:w-64 bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
+        "fixed right-0 top-0 h-full bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
+        isSafariIPhone() && isLandscape ? "w-48" : "w-56 sm:w-64",
         showSidebar ? "translate-x-0" : "translate-x-full"
       )}>
         {/* Header do Painel */}
         <div className="p-3 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">
+            <h2 className={cn(
+              "font-semibold",
+              isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+            )}>
               {activePanel === 'actions' && 'Registrar Ação'}
               {activePanel === 'history' && 'Histórico de Ações'}
             </h2>
@@ -551,7 +631,10 @@ export function IOSFieldView() {
                 setShowSidebar(false)
                 setActivePanel(null)
               }}
-              className="h-6 w-6 rounded-full"
+              className={cn(
+                "rounded-full",
+                isSafariIPhone() && isLandscape ? "h-5 w-5" : "h-6 w-6"
+              )}
             >
               <X className="h-3 w-3" />
             </Button>
@@ -559,14 +642,25 @@ export function IOSFieldView() {
         </div>
 
         {/* Conteúdo do Painel Ativo */}
-        <div className="flex-1 overflow-y-auto p-3">
+        <div className={cn(
+          "flex-1 overflow-y-auto",
+          isSafariIPhone() && isLandscape ? "p-2" : "p-3"
+        )}>
           {activePanel === 'actions' && (
-            <div className="space-y-4">
+            <div className={cn(
+              isSafariIPhone() && isLandscape ? "space-y-2" : "space-y-4"
+            )}>
               <div className="text-center mb-4">
-                <h3 className="font-semibold text-sm text-muted-foreground mb-2">Registrar Ação</h3>
+                <h3 className={cn(
+                  "font-semibold text-muted-foreground mb-2",
+                  isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+                )}>Registrar Ação</h3>
                 {currentMatch.currentPossession && (
                   <div className="p-2 bg-muted/30 rounded-lg text-center">
-                    <span className="text-xs font-medium">{currentPossessionTeam?.name}</span>
+                    <span className={cn(
+                      "font-medium",
+                      isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                    )}>{currentPossessionTeam?.name}</span>
                   </div>
                 )}
               </div>
@@ -575,7 +669,10 @@ export function IOSFieldView() {
               ) : (
                 <div className="text-center py-6">
                   <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-xs text-muted-foreground">
+                  <p className={cn(
+                    "text-muted-foreground",
+                    isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                  )}>
                     Selecione a posse de bola primeiro
                   </p>
                 </div>
@@ -584,18 +681,29 @@ export function IOSFieldView() {
           )}
 
           {activePanel === 'history' && (
-            <div className="space-y-3">
+            <div className={cn(
+              isSafariIPhone() && isLandscape ? "space-y-2" : "space-y-3"
+            )}>
               <div className="text-center mb-4">
-                <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                <h3 className={cn(
+                  "font-semibold text-muted-foreground mb-2",
+                  isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+                )}>
                   Últimas ações registradas
                 </h3>
-                <div className="text-xs text-muted-foreground">
+                <div className={cn(
+                  "text-muted-foreground",
+                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                )}>
                   Total: {currentMatch.actions.length} ações
                 </div>
               </div>
               
               {/* Lista das últimas 10 ações */}
-              <div className="space-y-2 max-h-72 overflow-y-auto">
+              <div className={cn(
+                "overflow-y-auto",
+                isSafariIPhone() && isLandscape ? "space-y-1 max-h-48" : "space-y-2 max-h-72"
+              )}>
                 {currentMatch.actions
                   .slice(-8)
                   .reverse()
@@ -605,17 +713,28 @@ export function IOSFieldView() {
                     const isEditing = editingAction === action.id
                     
                     return (
-                      <div key={action.id} className="p-3 rounded-lg bg-muted/30 border border-border/30">
+                      <div key={action.id} className={cn(
+                        "rounded-lg bg-muted/30 border border-border/30",
+                        isSafariIPhone() && isLandscape ? "p-2" : "p-3"
+                      )}>
                         {isEditing ? (
-                          <div className="space-y-3">
+                          <div className={cn(
+                            isSafariIPhone() && isLandscape ? "space-y-2" : "space-y-3"
+                          )}>
                             {/* Edição de Time */}
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">Time</label>
+                              <label className={cn(
+                                "font-medium text-muted-foreground",
+                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                              )}>Time</label>
                               <Select
                                 value={editForm.teamId || action.teamId}
                                 onValueChange={(value) => setEditForm(prev => ({ ...prev, teamId: value }))}
                               >
-                                <SelectTrigger className="h-8 text-xs">
+                                <SelectTrigger className={cn(
+                                  "text-xs",
+                                  isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                )}>
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -628,12 +747,18 @@ export function IOSFieldView() {
                             {/* Edição de Ação */}
                             {action.type === 'specific' && (
                               <div>
-                                <label className="text-xs font-medium text-muted-foreground">Ação</label>
+                                <label className={cn(
+                                  "font-medium text-muted-foreground",
+                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                )}>Ação</label>
                                 <Select
                                   value={editForm.actionName || action.actionName || ''}
                                   onValueChange={(value) => setEditForm(prev => ({ ...prev, actionName: value }))}
                                 >
-                                  <SelectTrigger className="h-8 text-xs">
+                                  <SelectTrigger className={cn(
+                                    "text-xs",
+                                    isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                  )}>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -650,12 +775,18 @@ export function IOSFieldView() {
                             {/* Edição de Jogador */}
                             {action.type === 'specific' && action.playerId && (
                               <div>
-                                <label className="text-xs font-medium text-muted-foreground">Jogador</label>
+                                <label className={cn(
+                                  "font-medium text-muted-foreground",
+                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                )}>Jogador</label>
                                 <Select
                                   value={editForm.playerId || action.playerId || ''}
                                   onValueChange={(value) => setEditForm(prev => ({ ...prev, playerId: value }))}
                                 >
-                                  <SelectTrigger className="h-8 text-xs">
+                                  <SelectTrigger className={cn(
+                                    "text-xs",
+                                    isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                  )}>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -674,7 +805,10 @@ export function IOSFieldView() {
                             
                             {/* Edição de Tempo */}
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">Tempo</label>
+                              <label className={cn(
+                                "font-medium text-muted-foreground",
+                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                              )}>Tempo</label>
                               <div className="flex space-x-2">
                                 <div className="flex-1">
                                   <Input
@@ -685,12 +819,18 @@ export function IOSFieldView() {
                                       const secs = (editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp) % 60
                                       setEditForm(prev => ({ ...prev, timestamp: mins * 60 + secs }))
                                     }}
-                                    className="h-8 text-xs"
+                                    className={cn(
+                                      "text-xs",
+                                      isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                    )}
                                     min="0"
                                     placeholder="Min"
                                   />
                                 </div>
-                                <span className="text-xs text-muted-foreground self-center">:</span>
+                                <span className={cn(
+                                  "text-muted-foreground self-center",
+                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                )}>:</span>
                                 <div className="flex-1">
                                   <Input
                                     type="number"
@@ -700,7 +840,10 @@ export function IOSFieldView() {
                                       const mins = Math.floor((editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp) / 60)
                                       setEditForm(prev => ({ ...prev, timestamp: mins * 60 + secs }))
                                     }}
-                                    className="h-8 text-xs"
+                                    className={cn(
+                                      "text-xs",
+                                      isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                    )}
                                     min="0"
                                     max="59"
                                     placeholder="Seg"
@@ -715,7 +858,10 @@ export function IOSFieldView() {
                                 variant="default"
                                 size="sm"
                                 onClick={handleSaveEdit}
-                                className="flex-1 h-7 text-xs"
+                                className={cn(
+                                  "flex-1 text-xs",
+                                  isSafariIPhone() && isLandscape ? "h-6" : "h-7"
+                                )}
                               >
                                 <Save className="h-3 w-3 mr-1" />
                                 Salvar
@@ -724,7 +870,10 @@ export function IOSFieldView() {
                                 variant="outline"
                                 size="sm"
                                 onClick={handleCancelEdit}
-                                className="flex-1 h-7 text-xs"
+                                className={cn(
+                                  "flex-1 text-xs",
+                                  isSafariIPhone() && isLandscape ? "h-6" : "h-7"
+                                )}
                               >
                                 <X className="h-3 w-3 mr-1" />
                                 Cancelar
@@ -734,25 +883,40 @@ export function IOSFieldView() {
                         ) : (
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <div className="text-xs font-medium truncate">
+                              <div className={cn(
+                                "font-medium truncate",
+                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                              )}>
                                 {action.actionName || (action.type === 'possession' ? 'Posse de Bola' : 'Ação')}
                               </div>
-                              <div className="text-xs text-muted-foreground mt-1">
+                              <div className={cn(
+                                "text-muted-foreground mt-1",
+                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                              )}>
                                 {team.name} • {formatTime(action.timestamp)}
                               </div>
                               {playerInfo && (
-                                <div className="text-xs text-primary mt-1 flex items-center">
+                                <div className={cn(
+                                  "text-primary mt-1 flex items-center",
+                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                )}>
                                   <User className="h-3 w-3 mr-1" />
                                   {playerInfo}
                                 </div>
                               )}
                             </div>
-                            <div className="flex flex-col space-y-1 ml-2">
+                            <div className={cn(
+                              "flex flex-col ml-2",
+                              isSafariIPhone() && isLandscape ? "space-y-0.5" : "space-y-1"
+                            )}>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleEditAction(action)}
-                                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                                className={cn(
+                                  "text-muted-foreground hover:text-foreground",
+                                  isSafariIPhone() && isLandscape ? "h-5 w-5" : "h-6 w-6"
+                                )}
                               >
                                 <Edit className="h-3 w-3" />
                               </Button>
@@ -763,7 +927,10 @@ export function IOSFieldView() {
                                   removeAction(action.id)
                                   showNotification('Ação removida', 'success')
                                 }}
-                                className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                                className={cn(
+                                  "text-muted-foreground hover:text-destructive",
+                                  isSafariIPhone() && isLandscape ? "h-5 w-5" : "h-6 w-6"
+                                )}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -777,7 +944,10 @@ export function IOSFieldView() {
                 {currentMatch.actions.length === 0 && (
                   <div className="text-center py-8">
                     <History className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-xs text-muted-foreground">
+                    <p className={cn(
+                      "text-muted-foreground",
+                      isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                    )}>
                     Nenhuma ação registrada ainda
                     </p>
                   </div>
