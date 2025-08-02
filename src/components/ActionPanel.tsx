@@ -18,7 +18,10 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
 
   const handleActionClick = (actionType: ActionType) => {
     if (!currentMatch.currentPossession) {
-      alert('Selecione o time que está com a posse de bola!')
+      // Usar evento customizado para notificação
+      window.dispatchEvent(new CustomEvent('showNotification', {
+        detail: { message: 'Selecione o time que está com a posse de bola!', type: 'warning' }
+      }))
       return
     }
 

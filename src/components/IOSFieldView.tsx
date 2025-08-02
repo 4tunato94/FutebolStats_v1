@@ -6,13 +6,21 @@ import {
   Users,
   Zap,
   History,
-  X
+  X,
+  AlertCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FieldGrid } from '@/components/FieldGrid'
 import { useFutebolStore } from '@/stores/futebolStore'
 import { ActionPanel } from '@/components/ActionPanel'
 import { cn } from '@/lib/utils'
+
+interface Notification {
+  id: string
+  message: string
+  type: 'error' | 'success' | 'warning' | 'info'
+  duration?: number
+}
 
 export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession } = useFutebolStore()
@@ -21,6 +29,7 @@ export function IOSFieldView() {
   const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
   const [timer, setTimer] = useState(0)
   const [lastClickTime, setLastClickTime] = useState(0)
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
   // Sincronizar estado fullscreen com o navegador
   useEffect(() => {
@@ -35,6 +44,58 @@ export function IOSFieldView() {
     }
   }, [])
 
+  // Sistema de notificações customizado
+  const showNotification = (message: string, type: 'error' | 'success' | 'warning' | 'info' = 'info', duration = 3000) => {
+    const id = Date.now().toString()
+    const notification: Notification = { id, message, type, duration }
+    
+    setNotifications(prev => [...prev, notification])
+    
+    if (duration > 0) {
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id))
+      }, duration)
+    }
+  }
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id))
+  }
+
+  // Interceptar alerts nativos quando em fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      const originalAlert = window.alert
+      window.alert = (message: string) => {
+        showNotification(message, 'warning')
+      }
+      
+      // Escutar eventos customizados de notificação
+      const handleCustomNotification = (event: CustomEvent) => {
+        const { message, type } = event.detail
+        showNotification(message, type)
+      }
+      
+      window.addEventListener('showNotification', handleCustomNotification as EventListener)
+      
+      return () => {
+        window.alert = originalAlert
+        window.removeEventListener('showNotification', handleCustomNotification as EventListener)
+      }
+    } else {
+      // Também escutar eventos quando não está em fullscreen
+      const handleCustomNotification = (event: CustomEvent) => {
+        const { message, type } = event.detail
+        showNotification(message, type)
+      }
+      
+      window.addEventListener('showNotification', handleCustomNotification as EventListener)
+      
+      return () => {
+        window.removeEventListener('showNotification', handleCustomNotification as EventListener)
+      }
+    }
+  }, [isFullscreen])
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
     
@@ -131,14 +192,53 @@ export function IOSFieldView() {
       ? currentMatch.teamB 
       : null
 
+  const getNotificationColor = (type: Notification['type']) => {
+    switch (type) {
+      case 'error': return 'bg-red-500/90 text-white border-red-600'
+      case 'success': return 'bg-green-500/90 text-white border-green-600'
+      case 'warning': return 'bg-yellow-500/90 text-black border-yellow-600'
+      case 'info': return 'bg-blue-500/90 text-white border-blue-600'
+      default: return 'bg-gray-500/90 text-white border-gray-600'
+    }
+  }
   return (
     <div className={cn(
-      "flex h-full relative overflow-hidden",
-      isFullscreen && "fixed inset-0 z-50 bg-background"
+      "flex h-full relative",
+      isFullscreen ? "fixed inset-0 z-50 bg-background safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden"
     )}>
       {/* Campo Principal */}
-      <div className="flex-1 relative">
+      <div className={cn(
+        "flex-1 relative",
+        isFullscreen && "w-screen h-screen"
+      )}>
         <FieldGrid isFullscreen={isFullscreen} />
+        
+        {/* Sistema de Notificações Customizado */}
+        {notifications.length > 0 && (
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 pointer-events-none">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={cn(
+                  "flex items-center space-x-2 px-4 py-3 rounded-lg border backdrop-blur-sm shadow-lg animate-in slide-in-from-top-2 fade-in-0 duration-300",
+                  getNotificationColor(notification.type),
+                  "pointer-events-auto"
+                )}
+              >
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm font-medium">{notification.message}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeNotification(notification.id)}
+                  className="h-6 w-6 ml-2 hover:bg-white/20"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
         
         {/* Controles Flutuantes - Canto Superior Direito */}
         <div className="absolute top-4 right-4 flex items-center space-x-2">
@@ -157,7 +257,10 @@ export function IOSFieldView() {
         </div>
 
         {/* Cronômetro Central */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
+        <div className={cn(
+          "absolute left-1/2 transform -translate-x-1/2 pointer-events-none z-30",
+          isFullscreen ? "top-4" : "top-2"
+        )}>
           <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2">
             <div className="text-sm font-mono font-bold text-center">
               {formatTime(timer)}
