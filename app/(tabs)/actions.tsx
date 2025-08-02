@@ -7,19 +7,12 @@ import ColorPicker from '../../components/ColorPicker';
 
 export default function ActionsScreen() {
   const { 
-    currentMatch, 
     actionTypes, 
-    addAction, 
     addActionType, 
     updateActionType, 
     deleteActionType 
   } = useFutebolStore();
   
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
-  const [selectedZone, setSelectedZone] = useState<string | null>(null);
-  const [actionDetails, setActionDetails] = useState('');
   const [showAddActionType, setShowAddActionType] = useState(false);
   const [editingActionType, setEditingActionType] = useState<any>(null);
 
@@ -34,58 +27,6 @@ export default function ActionsScreen() {
     multiplePlayersAction: false,
     teamChangeAction: false
   });
-
-  const FIELD_ZONES = [
-    'Defesa Esquerda', 'Defesa Central', 'Defesa Direita',
-    'Meio Esquerda', 'Meio Central', 'Meio Direita',
-    'Ataque Esquerda', 'Ataque Central', 'Ataque Direita',
-    'Área Esquerda', 'Área Central', 'Área Direita'
-  ];
-
-  const handleSubmitAction = () => {
-    if (!selectedAction || !selectedTeam || !selectedPlayer || !selectedZone) {
-      Alert.alert('Erro', 'Selecione todos os campos obrigatórios');
-      return;
-    }
-
-    if (!currentMatch) {
-      Alert.alert('Erro', 'Nenhuma partida em andamento');
-      return;
-    }
-
-    const team = currentMatch.teamA.id === selectedTeam ? currentMatch.teamA : currentMatch.teamB;
-    const player = team.players.find(p => p.id === selectedPlayer);
-    
-    if (!player) {
-      Alert.alert('Erro', 'Jogador não encontrado');
-      return;
-    }
-
-    const actionType = actionTypes.find(a => a.id === selectedAction);
-    const minute = Math.floor(currentMatch.currentTime / 60);
-    const second = currentMatch.currentTime % 60;
-
-    addAction({
-      playerId: player.id,
-      playerName: player.name,
-      teamId: team.id,
-      teamName: team.name,
-      action: actionType?.name || selectedAction,
-      zone: selectedZone,
-      minute,
-      second,
-      details: actionDetails || undefined
-    });
-    
-    // Reset selections
-    setSelectedAction(null);
-    setSelectedTeam(null);
-    setSelectedPlayer(null);
-    setSelectedZone(null);
-    setActionDetails('');
-
-    Alert.alert('Sucesso', 'Ação registrada com sucesso!');
-  };
 
   const handleAddActionType = () => {
     if (!actionTypeForm.name.trim() || !actionTypeForm.icon.trim()) {
@@ -207,179 +148,10 @@ export default function ActionsScreen() {
                     )}
                   </View>
                 </View>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.emptyState}>
-            <Zap color="#666" size={80} />
-            <Text style={styles.emptyTitle}>Nenhuma partida em andamento</Text>
-            <Text style={styles.emptyText}>
-              Inicie uma partida na tela inicial para registrar ações
-            </Text>
-          </View>
-        </ScrollView>
-
-        {/* Add/Edit Action Type Modal */}
-        {(showAddActionType || editingActionType) && (
-          <View style={styles.modal}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>
-                {editingActionType ? 'Editar Tipo de Ação' : 'Nova Tipo de Ação'}
-              </Text>
-              
-              <TextInput
-                style={styles.input}
-                placeholder="Nome da ação"
-                value={actionTypeForm.name}
-                onChangeText={(text) => setActionTypeForm({ ...actionTypeForm, name: text })}
-              />
-
-              <TextInput
-                style={styles.input}
-                placeholder="Ícone (emoji)"
-                value={actionTypeForm.icon}
-                onChangeText={(text) => setActionTypeForm({ ...actionTypeForm, icon: text })}
-              />
-
-              <ColorPicker
-                label="Cor"
-                color={actionTypeForm.color}
-                onColorChange={(color) => setActionTypeForm({ ...actionTypeForm, color })}
-              />
-
-              <View style={styles.categoryButtons}>
-                {['offensive', 'defensive', 'neutral'].map(category => (
-                  <TouchableOpacity
-                    key={category}
-                    style={[
-                      styles.categoryButton,
-                      actionTypeForm.category === category && styles.selectedCategory
-                    ]}
-                    onPress={() => setActionTypeForm({ ...actionTypeForm, category: category as any })}
-                  >
-                    <Text style={styles.categoryButtonText}>
-                      {category === 'offensive' ? 'Ofensiva' : 
-                       category === 'defensive' ? 'Defensiva' : 'Neutra'}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <View style={styles.optionsSection}>
-                <Text style={styles.optionsTitle}>Opções da Ação:</Text>
-                
-                <TouchableOpacity
-                  style={styles.checkboxRow}
-                  onPress={() => setActionTypeForm({ 
-                    ...actionTypeForm, 
-                    changePossessionAutomatically: !actionTypeForm.changePossessionAutomatically 
-                  })}
-                >
-                  <View style={[styles.checkbox, actionTypeForm.changePossessionAutomatically && styles.checkboxChecked]}>
-                    {actionTypeForm.changePossessionAutomatically && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                  <Text style={styles.checkboxLabel}>Muda posse automaticamente</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.checkboxRow}
-                  onPress={() => setActionTypeForm({ 
-                    ...actionTypeForm, 
-                    requiresPlayerSelection: !actionTypeForm.requiresPlayerSelection 
-                  })}
-                >
-                  <View style={[styles.checkbox, actionTypeForm.requiresPlayerSelection && styles.checkboxChecked]}>
-                    {actionTypeForm.requiresPlayerSelection && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                  <Text style={styles.checkboxLabel}>Requer seleção de jogador</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.checkboxRow}
-                  onPress={() => setActionTypeForm({ 
-                    ...actionTypeForm, 
-                    reverseAction: !actionTypeForm.reverseAction 
-                  })}
-                >
-                  <View style={[styles.checkbox, actionTypeForm.reverseAction && styles.checkboxChecked]}>
-                    {actionTypeForm.reverseAction && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                  <Text style={styles.checkboxLabel}>Ação reversa (registra no time adversário)</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.checkboxRow}
-                  onPress={() => setActionTypeForm({ 
-                    ...actionTypeForm, 
-                    multiplePlayersAction: !actionTypeForm.multiplePlayersAction 
-                  })}
-                >
-                  <View style={[styles.checkbox, actionTypeForm.multiplePlayersAction && styles.checkboxChecked]}>
-                    {actionTypeForm.multiplePlayersAction && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                  <Text style={styles.checkboxLabel}>Ação de múltiplos jogadores</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.checkboxRow}
-                  onPress={() => setActionTypeForm({ 
-                    ...actionTypeForm, 
-                    teamChangeAction: !actionTypeForm.teamChangeAction 
-                  })}
-                >
-                  <View style={[styles.checkbox, actionTypeForm.teamChangeAction && styles.checkboxChecked]}>
-                    {actionTypeForm.teamChangeAction && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                  <Text style={styles.checkboxLabel}>Mudança no time</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.modalActions}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => {
-                    setShowAddActionType(false);
-                    setEditingActionType(null);
-                    setActionTypeForm({
-                      name: '',
-                      icon: '',
-                      color: '#4CAF50',
-                      category: 'neutral',
-                      changePossessionAutomatically: false,
-                      requiresPlayerSelection: false,
-                      reverseAction: false,
-                      multiplePlayersAction: false,
-                      teamChangeAction: false
-                    });
-                  }}
-                >
-                  <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={editingActionType ? handleEditActionType : handleAddActionType}
-                >
-                  <Text style={styles.saveButtonText}>
-                    {editingActionType ? 'Salvar' : 'Adicionar'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Ações do Jogo</Text>
-        <View style={styles.matchInfo}>
-          <Text style={styles.matchText}>
-            {currentMatch.teamA.name} vs {currentMatch.teamB.name}
-          </Text>
-        </View>
+        <Text style={styles.headerTitle}>Cadastro de Ações</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowAddActionType(true)}
@@ -389,136 +161,62 @@ export default function ActionsScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Action Types */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tipo de Ação</Text>
-          <View style={styles.actionGrid}>
-            {actionTypes.map(action => (
-              <TouchableOpacity
-                key={action.id}
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: action.color },
-                  selectedAction === action.id && styles.selectedButton
-                ]}
-                onPress={() => setSelectedAction(action.id)}
-              >
-                <Text style={styles.actionIcon}>{action.icon}</Text>
-                <Text style={styles.actionText}>{action.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Team Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Time</Text>
-          <View style={styles.teamGrid}>
-            <TouchableOpacity
-              style={[
-                styles.teamButton,
-                { backgroundColor: currentMatch.teamA.colors.primary },
-                selectedTeam === currentMatch.teamA.id && styles.selectedTeamButton
-              ]}
-              onPress={() => setSelectedTeam(currentMatch.teamA.id)}
-            >
-              <Text style={styles.teamText}>{currentMatch.teamA.name}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.teamButton,
-                { backgroundColor: currentMatch.teamB.colors.primary },
-                selectedTeam === currentMatch.teamB.id && styles.selectedTeamButton
-              ]}
-              onPress={() => setSelectedTeam(currentMatch.teamB.id)}
-            >
-              <Text style={styles.teamText}>{currentMatch.teamB.name}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Player Selection */}
-        {selectedTeam && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Jogador</Text>
-            <View style={styles.playerGrid}>
-              {getSelectedTeamPlayers().map(player => (
-                <TouchableOpacity
-                  key={player.id}
-                  style={[
-                    styles.playerButton,
-                    selectedPlayer === player.id && styles.selectedPlayerButton
-                  ]}
-                  onPress={() => setSelectedPlayer(player.id)}
-                >
-                  <Text style={styles.playerNumber}>#{player.number}</Text>
-                  <Text style={styles.playerName}>{player.name}</Text>
-                  <Text style={styles.playerPosition}>{player.position}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Zone Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Zona do Campo</Text>
-          <View style={styles.zoneGrid}>
-            {FIELD_ZONES.map(zone => (
-              <TouchableOpacity
-                key={zone}
-                style={[
-                  styles.zoneButton,
-                  selectedZone === zone && styles.selectedZoneButton
-                ]}
-                onPress={() => setSelectedZone(zone)}
-              >
-                <Text style={styles.zoneText}>{zone}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Action Details */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Detalhes (Opcional)</Text>
-          <TextInput
-            style={styles.detailsInput}
-            placeholder="Adicione detalhes sobre a ação..."
-            value={actionDetails}
-            onChangeText={setActionDetails}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-
-        {/* Submit Button */}
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            (!selectedAction || !selectedTeam || !selectedPlayer || !selectedZone) && styles.submitButtonDisabled
-          ]}
-          onPress={handleSubmitAction}
-          disabled={!selectedAction || !selectedTeam || !selectedPlayer || !selectedZone}
-        >
-          <Zap color="white" size={24} />
-          <Text style={styles.submitButtonText}>Registrar Ação</Text>
-        </TouchableOpacity>
-
-        {/* Recent Actions */}
-        {currentMatch.actions.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ações Recentes</Text>
-            {currentMatch.actions.slice(-5).reverse().map(action => (
-              <View key={action.id} style={styles.recentAction}>
-                <Text style={styles.recentActionTime}>{action.minute}:{action.second.toString().padStart(2, '0')}</Text>
-                <Text style={styles.recentActionText}>
-                  {action.action} - {action.playerName} ({action.teamName}) - {action.zone}
-                </Text>
+          <Text style={styles.sectionTitle}>Tipos de Ação Cadastrados</Text>
+          <View style={styles.actionTypesGrid}>
+            {actionTypes.map(actionType => (
+              <View key={actionType.id} style={styles.actionTypeCard}>
+                <View style={styles.actionTypeHeader}>
+                  <View style={[styles.actionTypeIcon, { backgroundColor: actionType.color }]}>
+                    <Text style={styles.actionTypeEmoji}>{actionType.icon}</Text>
+                  </View>
+                  <Text style={styles.actionTypeName}>{actionType.name}</Text>
+                  <View style={styles.actionTypeActions}>
+                    <TouchableOpacity
+                      onPress={() => startEditActionType(actionType)}
+                      style={styles.actionTypeButton}
+                    >
+                      <Edit color="#666" size={16} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        Alert.alert(
+                          'Confirmar',
+                          `Deseja excluir a ação "${actionType.name}"?`,
+                          [
+                            { text: 'Cancelar', style: 'cancel' },
+                  <Text style={styles.checkboxLabel}>Ação Reversa (Registra no time adversário)</Text>
+                          ]
+                        );
+                      }}
+                      style={styles.actionTypeButton}
+                    >
+                      <Trash2 color="#ff4444" size={16} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <Text style={styles.actionTypeCategory}>Categoria: {actionType.category}</Text>
+                <View style={styles.actionTypeOptions}>
+                  {actionType.changePossessionAutomatically && (
+                  <Text style={styles.checkboxLabel}>Ação de Mais de um jogador</Text>
+                  )}
+                  {actionType.requiresPlayerSelection && (
+                    <Text style={styles.actionTypeOption}>• Requer seleção de jogador</Text>
+                  )}
+                  {actionType.reverseAction && (
+                    <Text style={styles.actionTypeOption}>• Ação reversa</Text>
+                  )}
+                  {actionType.multiplePlayersAction && (
+                    <Text style={styles.actionTypeOption}>• Ação de múltiplos jogadores</Text>
+                  )}
+                  {actionType.teamChangeAction && (
+                    <Text style={styles.actionTypeOption}>• Mudança no time</Text>
+                  <Text style={styles.checkboxLabel}>Mudança no time</Text>
+                </View>
               </View>
             ))}
           </View>
-        )}
+        </View>
       </ScrollView>
 
       {/* Add/Edit Action Type Modal */}
@@ -555,14 +253,19 @@ export default function ActionsScreen() {
                   key={category}
                   style={[
                     styles.categoryButton,
-                    actionTypeForm.category === category && styles.selectedCategory
+                      category: 'neutral',
+                      changePossessionAutomatically: false,
+                      requiresPlayerSelection: false,
+                      reverseAction: false,
+                      multiplePlayersAction: false,
+                      teamChangeAction: false
                   ]}
                   onPress={() => setActionTypeForm({ ...actionTypeForm, category: category as any })}
                 >
                   <Text style={styles.categoryButtonText}>
                     {category === 'offensive' ? 'Ofensiva' : 
                      category === 'defensive' ? 'Defensiva' : 'Neutra'}
-                  </Text>
+                  <Text style={styles.checkboxLabel}>Mudar posse automaticamente</Text>
                 </TouchableOpacity>
               ))}
             </View>

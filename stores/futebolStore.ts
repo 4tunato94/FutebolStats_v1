@@ -81,6 +81,18 @@ const DEFAULT_ACTION_TYPES: ActionType[] = [
   { id: 'save', name: 'Defesa', icon: '🧤', color: '#00BCD4', category: 'defensive', requiresPlayerSelection: true },
 ];
 
+const DEFAULT_POSITIONS = [
+  'Goleiro', 'Zagueiro', 'Lateral Esquerdo', 'Lateral Direito', 'Meio-campista', 'Atacante'
+];
+
+const DEFAULT_ROLES = [
+  'Goleiro Tradicional', 'Goleiro-Líbero', 'Zagueiro Central', 'Zagueiro Construtor', 'Líbero', 
+  'Lateral Defensivo', 'Lateral Apoiador', 'Lateral Construtor', 'Ala', 'Cabeça de Área', 
+  'Primeiro Volante', 'Segundo Volante', 'Meia Box-to-Box', 'Meia Armador', 'Meia Central', 
+  'Meia-atacante', 'Meia de Ligação', 'Ponta', 'Extremo', 'Ponta Invertido', 'Segundo Atacante', 
+  'Centroavante', 'Homem de Área', 'Pivô', 'Falso 9'
+];
+
 interface FutebolStore {
   teams: Team[];
   currentMatch: Match | null;
@@ -115,6 +127,14 @@ interface FutebolStore {
   addActionType: (actionType: Omit<ActionType, 'id'>) => void;
   updateActionType: (id: string, actionType: Partial<ActionType>) => void;
   deleteActionType: (id: string) => void;
+  
+  // Position and role management
+  positions: string[];
+  roles: string[];
+  addPosition: (position: string) => void;
+  removePosition: (position: string) => void;
+  addRole: (role: string) => void;
+  removeRole: (role: string) => void;
   
   // App state
   setAppState: (state: 'menu' | 'playing') => void;
@@ -286,6 +306,22 @@ export const useFutebolStore = create<FutebolStore>()(
 
       deleteActionType: (id) => set((state) => ({
         actionTypes: state.actionTypes.filter(actionType => actionType.id !== id)
+      })),
+
+      addPosition: (position) => set((state) => ({
+        positions: state.positions.includes(position) ? state.positions : [...state.positions, position]
+      })),
+
+      removePosition: (position) => set((state) => ({
+        positions: state.positions.filter(p => p !== position)
+      })),
+
+      addRole: (role) => set((state) => ({
+        roles: state.roles.includes(role) ? state.roles : [...state.roles, role]
+      })),
+
+      removeRole: (role) => set((state) => ({
+        roles: state.roles.filter(r => r !== role)
       })),
 
       setAppState: (appState) => set({ appState })

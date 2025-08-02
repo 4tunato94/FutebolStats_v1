@@ -7,7 +7,22 @@ import ColorPicker from '../../components/ColorPicker';
 import ImagePicker from '../../components/ImagePicker';
 
 export default function TeamsScreen() {
-  const { teams, addTeam, updateTeam, deleteTeam, addPlayer, addMultiplePlayers, updatePlayer, deletePlayer } = useFutebolStore();
+  const { 
+    teams, 
+    addTeam, 
+    updateTeam, 
+    deleteTeam, 
+    addPlayer, 
+    addMultiplePlayers, 
+    updatePlayer, 
+    deletePlayer,
+    positions,
+    roles,
+    addPosition,
+    removePosition,
+    addRole,
+    removeRole
+  } = useFutebolStore();
   const [showAddTeam, setShowAddTeam] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [showAddPlayer, setShowAddPlayer] = useState<string | null>(null);
@@ -409,37 +424,69 @@ export default function TeamsScreen() {
               style={styles.input}
               placeholder="Posição"
               value={playerForm.position}
-              onChangeText={(text) => setPlayerForm({ ...playerForm, position: text })}
+              onChangeText={(text) => {
+                setPlayerForm({ ...playerForm, position: text });
+                if (text && !positions.includes(text)) {
+                  addPosition(text);
+                }
+              }}
             />
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
-              {POSITIONS.map(pos => (
-                <TouchableOpacity
-                  key={pos}
-                  style={styles.quickSelectButton}
-                  onPress={() => setPlayerForm({ ...playerForm, position: pos })}
-                >
-                  <Text style={styles.quickSelectText}>{pos}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            <View style={styles.quickSelectContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
+                {positions.map(pos => (
+                  <View key={pos} style={styles.quickSelectItem}>
+                    <TouchableOpacity
+                      style={styles.quickSelectButton}
+                      onPress={() => setPlayerForm({ ...playerForm, position: pos })}
+                    >
+                      <Text style={styles.quickSelectText}>{pos}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removePosition(pos)}
+                    >
+                      <Text style={styles.removeButtonText}>×</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
 
             <TextInput
               style={styles.input}
               placeholder="Função"
               value={playerForm.role}
-              onChangeText={(text) => setPlayerForm({ ...playerForm, role: text })}
+              onChangeText={(text) => {
+                setPlayerForm({ ...playerForm, role: text });
+                if (text && !roles.includes(text)) {
+                  addRole(text);
+                }
+              ))}
             />
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
-              {ROLES.map(role => (
-                <TouchableOpacity
-                  key={role}
-                  style={styles.quickSelectButton}
-                  onPress={() => setPlayerForm({ ...playerForm, role: role })}
-                >
-                  <Text style={styles.quickSelectText}>{role}</Text>
-                </TouchableOpacity>
+            <View style={styles.quickSelectContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
+                {roles.map(role => (
+                  <View key={role} style={styles.quickSelectItem}>
+                    <TouchableOpacity
+                      style={styles.quickSelectButton}
+                      onPress={() => setPlayerForm({ ...playerForm, role: role })}
+                    >
+                      <Text style={styles.quickSelectText}>{role}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeRole(role)}
+                    >
+                      <Text style={styles.removeButtonText}>×</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            <View style={styles.modalActions}>
               ))}
             </ScrollView>
             <View style={styles.modalActions}>
@@ -469,39 +516,35 @@ export default function TeamsScreen() {
       {/* Bulk Add Players Modal */}
       {showBulkAdd && (
         <View style={styles.modal}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, styles.bulkModalContent]}>
             <Text style={styles.modalTitle}>Adicionar Múltiplos Jogadores</Text>
             
-            <ScrollView style={styles.bulkAddScroll}>
-              <Text style={styles.instructionText}>
-                Digite os jogadores no formato: Número,Nome,Posição,Função{'\n'}
-                Um jogador por linha. Exemplo:{'\n'}
-                1,João Silva,Goleiro,Goleiro Tradicional{'\n'}
-                10,Pedro Santos,Meio-campista,Meia Armador
-              </Text>
-              
-              <TextInput
-                style={[styles.input, styles.bulkTextArea]}
-                placeholder="1,João Silva,Goleiro,Goleiro Tradicional&#10;10,Pedro Santos,Meio-campista,Meia Armador"
-                value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
-                onChangeText={(text) => {
-                  const lines = text.split('\n');
-                  const players = lines.map(line => {
-                    const parts = line.split(',');
-                    return {
-                      number: parts[0] || '',
-                      name: parts[1] || '',
-                      position: parts[2] || '',
-                      role: parts[3] || ''
-                    };
-                  });
-                  setBulkPlayers(players);
-                }}
-                multiline
-                numberOfLines={10}
-                textAlignVertical="top"
-              />
-            </ScrollView>
+            <Text style={styles.instructionText}>
+              Digite um jogador por linha no formato:{'\n'}
+              Número,Nome,Posição,Função
+            </Text>
+            
+            <TextInput
+              style={[styles.input, styles.bulkTextArea]}
+              placeholder=""
+              value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
+              onChangeText={(text) => {
+                const lines = text.split('\n');
+                const players = lines.map(line => {
+                  const parts = line.split(',');
+                  return {
+                    number: parts[0] || '',
+                    name: parts[1] || '',
+                    position: parts[2] || '',
+                    role: parts[3] || ''
+                  };
+                });
+                setBulkPlayers(players);
+              }}
+              multiline
+              numberOfLines={15}
+              textAlignVertical="top"
+            />
 
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -733,20 +776,40 @@ const styles = StyleSheet.create({
   quickSelect: {
     marginBottom: 16,
   },
+  quickSelectContainer: {
+    marginBottom: 16,
+  },
+  quickSelectItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
   quickSelectButton: {
     backgroundColor: '#f0f0f0',
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    marginRight: 8,
   },
   quickSelectText: {
     fontSize: 12,
     color: '#333',
   },
-  bulkAddScroll: {
-    maxHeight: 300,
-    marginBottom: 16,
+  removeButton: {
+    backgroundColor: '#ff4444',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 4,
+  },
+  removeButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  bulkModalContent: {
+    maxHeight: '90%',
   },
   bulkPlayerRow: {
     flexDirection: 'row',
@@ -758,15 +821,17 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   bulkTextArea: {
-    height: 200,
+    height: 300,
     textAlignVertical: 'top',
     fontFamily: 'monospace',
+    flex: 1,
   },
   instructionText: {
     fontSize: 14,
     color: '#666',
     marginBottom: 16,
     lineHeight: 20,
+    textAlign: 'center',
   },
   modalActions: {
     flexDirection: 'row',
