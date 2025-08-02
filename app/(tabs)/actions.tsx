@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Zap, Plus, CreditCard as Edit, Trash2 } from 'lucide-react-native';
 import { useFutebolStore } from '../../stores/futebolStore';
-import { ColorPicker } from '../../components/ColorPicker';
+import ColorPicker from '../../components/ColorPicker';
 
 export default function ActionsScreen() {
   const { 
