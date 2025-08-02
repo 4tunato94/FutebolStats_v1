@@ -565,12 +565,7 @@ export function IOSFieldView() {
               <div className="text-center mb-4">
                 <h3 className="font-semibold text-sm text-muted-foreground mb-2">Registrar Ação</h3>
                 {currentMatch.currentPossession && (
-                  <div className="flex items-center justify-center space-x-2 p-2 bg-muted/30 rounded-lg">
-                    <img 
-                      src={currentPossessionTeam?.logoUrl} 
-                      alt={currentPossessionTeam?.name}
-                      className="w-5 h-5 object-contain"
-                    />
+                  <div className="p-2 bg-muted/30 rounded-lg text-center">
                     <span className="text-xs font-medium">{currentPossessionTeam?.name}</span>
                   </div>
                 )}
@@ -679,14 +674,39 @@ export function IOSFieldView() {
                             
                             {/* Edição de Tempo */}
                             <div>
-                              <label className="text-xs font-medium text-muted-foreground">Tempo (segundos)</label>
-                              <Input
-                                type="number"
-                                value={editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp}
-                                onChange={(e) => setEditForm(prev => ({ ...prev, timestamp: parseInt(e.target.value) || 0 }))}
-                                className="h-8 text-xs"
-                                min="0"
-                              />
+                              <label className="text-xs font-medium text-muted-foreground">Tempo</label>
+                              <div className="flex space-x-2">
+                                <div className="flex-1">
+                                  <Input
+                                    type="number"
+                                    value={Math.floor((editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp) / 60)}
+                                    onChange={(e) => {
+                                      const mins = parseInt(e.target.value) || 0
+                                      const secs = (editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp) % 60
+                                      setEditForm(prev => ({ ...prev, timestamp: mins * 60 + secs }))
+                                    }}
+                                    className="h-8 text-xs"
+                                    min="0"
+                                    placeholder="Min"
+                                  />
+                                </div>
+                                <span className="text-xs text-muted-foreground self-center">:</span>
+                                <div className="flex-1">
+                                  <Input
+                                    type="number"
+                                    value={(editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp) % 60}
+                                    onChange={(e) => {
+                                      const secs = parseInt(e.target.value) || 0
+                                      const mins = Math.floor((editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp) / 60)
+                                      setEditForm(prev => ({ ...prev, timestamp: mins * 60 + secs }))
+                                    }}
+                                    className="h-8 text-xs"
+                                    min="0"
+                                    max="59"
+                                    placeholder="Seg"
+                                  />
+                                </div>
+                              </div>
                             </div>
                             
                             {/* Botões de Ação */}
