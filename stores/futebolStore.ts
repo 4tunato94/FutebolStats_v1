@@ -53,27 +53,32 @@ export interface ActionType {
   icon: string;
   color: string;
   category: 'offensive' | 'defensive' | 'neutral';
+  changePossessionAutomatically?: boolean;
+  requiresPlayerSelection?: boolean;
+  reverseAction?: boolean;
+  multiplePlayersAction?: boolean;
+  teamChangeAction?: boolean;
 }
 
 const DEFAULT_ACTION_TYPES: ActionType[] = [
-  { id: 'goal', name: 'Gol', icon: '⚽', color: '#4CAF50', category: 'offensive' },
-  { id: 'assist', name: 'Assistência', icon: '🎯', color: '#2196F3', category: 'offensive' },
-  { id: 'shot_on_target', name: 'Chute no Gol', icon: '🥅', color: '#FF9800', category: 'offensive' },
-  { id: 'shot_off_target', name: 'Chute Fora', icon: '📤', color: '#FF5722', category: 'offensive' },
-  { id: 'pass_completed', name: 'Passe Certo', icon: '✅', color: '#8BC34A', category: 'neutral' },
-  { id: 'pass_failed', name: 'Passe Errado', icon: '❌', color: '#F44336', category: 'neutral' },
-  { id: 'cross', name: 'Cruzamento', icon: '↗️', color: '#9C27B0', category: 'offensive' },
+  { id: 'goal', name: 'Gol', icon: '⚽', color: '#4CAF50', category: 'offensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
+  { id: 'assist', name: 'Assistência', icon: '🎯', color: '#2196F3', category: 'offensive', requiresPlayerSelection: true },
+  { id: 'shot_on_target', name: 'Chute no Gol', icon: '🥅', color: '#FF9800', category: 'offensive', requiresPlayerSelection: true },
+  { id: 'shot_off_target', name: 'Chute Fora', icon: '📤', color: '#FF5722', category: 'offensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
+  { id: 'pass_completed', name: 'Passe Certo', icon: '✅', color: '#8BC34A', category: 'neutral', requiresPlayerSelection: true },
+  { id: 'pass_failed', name: 'Passe Errado', icon: '❌', color: '#F44336', category: 'neutral', changePossessionAutomatically: true, requiresPlayerSelection: true },
+  { id: 'cross', name: 'Cruzamento', icon: '↗️', color: '#9C27B0', category: 'offensive', requiresPlayerSelection: true },
   { id: 'corner', name: 'Escanteio', icon: '📐', color: '#607D8B', category: 'neutral' },
-  { id: 'free_kick', name: 'Tiro Livre', icon: '🦶', color: '#795548', category: 'neutral' },
-  { id: 'penalty', name: 'Pênalti', icon: '🎯', color: '#E91E63', category: 'offensive' },
-  { id: 'foul', name: 'Falta', icon: '⚠️', color: '#F44336', category: 'defensive' },
-  { id: 'card_yellow', name: 'Cartão Amarelo', icon: '🟨', color: '#FFEB3B', category: 'defensive' },
-  { id: 'card_red', name: 'Cartão Vermelho', icon: '🟥', color: '#F44336', category: 'defensive' },
-  { id: 'substitution', name: 'Substituição', icon: '🔄', color: '#607D8B', category: 'neutral' },
-  { id: 'offside', name: 'Impedimento', icon: '🚫', color: '#9E9E9E', category: 'defensive' },
-  { id: 'tackle', name: 'Desarme', icon: '🛡️', color: '#3F51B5', category: 'defensive' },
-  { id: 'interception', name: 'Interceptação', icon: '✋', color: '#009688', category: 'defensive' },
-  { id: 'save', name: 'Defesa', icon: '🧤', color: '#00BCD4', category: 'defensive' },
+  { id: 'free_kick', name: 'Tiro Livre', icon: '🦶', color: '#795548', category: 'neutral', requiresPlayerSelection: true },
+  { id: 'penalty', name: 'Pênalti', icon: '🎯', color: '#E91E63', category: 'offensive', requiresPlayerSelection: true },
+  { id: 'foul', name: 'Falta', icon: '⚠️', color: '#F44336', category: 'defensive', changePossessionAutomatically: true, reverseAction: true, requiresPlayerSelection: true },
+  { id: 'card_yellow', name: 'Cartão Amarelo', icon: '🟨', color: '#FFEB3B', category: 'defensive', requiresPlayerSelection: true },
+  { id: 'card_red', name: 'Cartão Vermelho', icon: '🟥', color: '#F44336', category: 'defensive', requiresPlayerSelection: true },
+  { id: 'substitution', name: 'Substituição', icon: '🔄', color: '#607D8B', category: 'neutral', multiplePlayersAction: true },
+  { id: 'offside', name: 'Impedimento', icon: '🚫', color: '#9E9E9E', category: 'defensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
+  { id: 'tackle', name: 'Desarme', icon: '🛡️', color: '#3F51B5', category: 'defensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
+  { id: 'interception', name: 'Interceptação', icon: '✋', color: '#009688', category: 'defensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
+  { id: 'save', name: 'Defesa', icon: '🧤', color: '#00BCD4', category: 'defensive', requiresPlayerSelection: true },
 ];
 
 interface FutebolStore {

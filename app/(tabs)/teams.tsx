@@ -33,12 +33,15 @@ export default function TeamsScreen() {
   ]);
 
   const POSITIONS = [
-    'Goleiro', 'Zagueiro', 'Lateral Direito', 'Lateral Esquerdo', 
-    'Volante', 'Meio-campo', 'Meia', 'Atacante', 'Centroavante', 'Ponta'
+    'Goleiro', 'Zagueiro', 'Lateral Esquerdo', 'Lateral Direito', 'Meio-campista', 'Atacante'
   ];
 
   const ROLES = [
-    'Titular', 'Reserva', 'Capitão', 'Vice-capitão', 'Técnico', 'Preparador'
+    'Goleiro Tradicional', 'Goleiro-Líbero', 'Zagueiro Central', 'Zagueiro Construtor', 'Líbero', 
+    'Lateral Defensivo', 'Lateral Apoiador', 'Lateral Construtor', 'Ala', 'Cabeça de Área', 
+    'Primeiro Volante', 'Segundo Volante', 'Meia Box-to-Box', 'Meia Armador', 'Meia Central', 
+    'Meia-atacante', 'Meia de Ligação', 'Ponta', 'Extremo', 'Ponta Invertido', 'Segundo Atacante', 
+    'Centroavante', 'Homem de Área', 'Pivô', 'Falso 9'
   ];
 
   const resetTeamForm = () => {
@@ -470,58 +473,34 @@ export default function TeamsScreen() {
             <Text style={styles.modalTitle}>Adicionar Múltiplos Jogadores</Text>
             
             <ScrollView style={styles.bulkAddScroll}>
-              {bulkPlayers.map((player, index) => (
-                <View key={index} style={styles.bulkPlayerRow}>
-                  <TextInput
-                    style={[styles.input, styles.bulkInput]}
-                    placeholder="Nº"
-                    value={player.number}
-                    onChangeText={(text) => {
-                      const newPlayers = [...bulkPlayers];
-                      newPlayers[index].number = text;
-                      setBulkPlayers(newPlayers);
-                    }}
-                    keyboardType="numeric"
-                  />
-                  <TextInput
-                    style={[styles.input, styles.bulkInput, { flex: 2 }]}
-                    placeholder="Nome"
-                    value={player.name}
-                    onChangeText={(text) => {
-                      const newPlayers = [...bulkPlayers];
-                      newPlayers[index].name = text;
-                      setBulkPlayers(newPlayers);
-                    }}
-                  />
-                  <TextInput
-                    style={[styles.input, styles.bulkInput]}
-                    placeholder="Posição"
-                    value={player.position}
-                    onChangeText={(text) => {
-                      const newPlayers = [...bulkPlayers];
-                      newPlayers[index].position = text;
-                      setBulkPlayers(newPlayers);
-                    }}
-                  />
-                  <TextInput
-                    style={[styles.input, styles.bulkInput]}
-                    placeholder="Função"
-                    value={player.role}
-                    onChangeText={(text) => {
-                      const newPlayers = [...bulkPlayers];
-                      newPlayers[index].role = text;
-                      setBulkPlayers(newPlayers);
-                    }}
-                  />
-                </View>
-              ))}
+              <Text style={styles.instructionText}>
+                Digite os jogadores no formato: Número,Nome,Posição,Função{'\n'}
+                Um jogador por linha. Exemplo:{'\n'}
+                1,João Silva,Goleiro,Goleiro Tradicional{'\n'}
+                10,Pedro Santos,Meio-campista,Meia Armador
+              </Text>
               
-              <TouchableOpacity
-                style={styles.addRowButton}
-                onPress={() => setBulkPlayers([...bulkPlayers, { number: '', name: '', position: '', role: '' }])}
-              >
-                <Text style={styles.addRowText}>+ Adicionar Linha</Text>
-              </TouchableOpacity>
+              <TextInput
+                style={[styles.input, styles.bulkTextArea]}
+                placeholder="1,João Silva,Goleiro,Goleiro Tradicional&#10;10,Pedro Santos,Meio-campista,Meia Armador"
+                value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
+                onChangeText={(text) => {
+                  const lines = text.split('\n');
+                  const players = lines.map(line => {
+                    const parts = line.split(',');
+                    return {
+                      number: parts[0] || '',
+                      name: parts[1] || '',
+                      position: parts[2] || '',
+                      role: parts[3] || ''
+                    };
+                  });
+                  setBulkPlayers(players);
+                }}
+                multiline
+                numberOfLines={10}
+                textAlignVertical="top"
+              />
             </ScrollView>
 
             <View style={styles.modalActions}>
@@ -778,16 +757,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 0,
   },
-  addRowButton: {
-    backgroundColor: '#e3f2fd',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  addRowText: {
-    color: '#1976d2',
-    fontWeight: '600',
+  bulkTextArea: {
+    height: 200,
+    textAlignVertical: 'top',
+    fontFamily: 'monospace',
   },
   instructionText: {
     fontSize: 14,

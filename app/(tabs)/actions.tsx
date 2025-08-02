@@ -26,7 +26,12 @@ export default function ActionsScreen() {
     name: '',
     icon: '',
     color: '#4CAF50',
-    category: 'neutral' as 'offensive' | 'defensive' | 'neutral'
+    category: 'neutral' as 'offensive' | 'defensive' | 'neutral',
+    changePossessionAutomatically: false,
+    requiresPlayerSelection: false,
+    reverseAction: false,
+    multiplePlayersAction: false,
+    teamChangeAction: false
   });
 
   const FIELD_ZONES = [
@@ -119,7 +124,12 @@ export default function ActionsScreen() {
       name: actionType.name,
       icon: actionType.icon,
       color: actionType.color,
-      category: actionType.category
+      category: actionType.category,
+      changePossessionAutomatically: actionType.changePossessionAutomatically || false,
+      requiresPlayerSelection: actionType.requiresPlayerSelection || false,
+      reverseAction: actionType.reverseAction || false,
+      multiplePlayersAction: actionType.multiplePlayersAction || false,
+      teamChangeAction: actionType.teamChangeAction || false
     });
   };
 
@@ -177,7 +187,24 @@ export default function ActionsScreen() {
                       </TouchableOpacity>
                     </View>
                   </View>
-                  <Text style={styles.actionTypeCategory}>{actionType.category}</Text>
+                  <Text style={styles.actionTypeCategory}>Categoria: {actionType.category}</Text>
+                  <View style={styles.actionTypeOptions}>
+                    {actionType.changePossessionAutomatically && (
+                      <Text style={styles.actionTypeOption}>• Muda posse automaticamente</Text>
+                    )}
+                    {actionType.requiresPlayerSelection && (
+                      <Text style={styles.actionTypeOption}>• Requer seleção de jogador</Text>
+                    )}
+                    {actionType.reverseAction && (
+                      <Text style={styles.actionTypeOption}>• Ação reversa</Text>
+                    )}
+                    {actionType.multiplePlayersAction && (
+                      <Text style={styles.actionTypeOption}>• Ação de múltiplos jogadores</Text>
+                    )}
+                    {actionType.teamChangeAction && (
+                      <Text style={styles.actionTypeOption}>• Mudança no time</Text>
+                    )}
+                  </View>
                 </View>
               ))}
             </View>
@@ -238,6 +265,74 @@ export default function ActionsScreen() {
                 ))}
               </View>
 
+              <View style={styles.optionsSection}>
+                <Text style={styles.optionsTitle}>Opções da Ação:</Text>
+                
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setActionTypeForm({ 
+                    ...actionTypeForm, 
+                    changePossessionAutomatically: !actionTypeForm.changePossessionAutomatically 
+                  })}
+                >
+                  <View style={[styles.checkbox, actionTypeForm.changePossessionAutomatically && styles.checkboxChecked]}>
+                    {actionTypeForm.changePossessionAutomatically && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Muda posse automaticamente</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setActionTypeForm({ 
+                    ...actionTypeForm, 
+                    requiresPlayerSelection: !actionTypeForm.requiresPlayerSelection 
+                  })}
+                >
+                  <View style={[styles.checkbox, actionTypeForm.requiresPlayerSelection && styles.checkboxChecked]}>
+                    {actionTypeForm.requiresPlayerSelection && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Requer seleção de jogador</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setActionTypeForm({ 
+                    ...actionTypeForm, 
+                    reverseAction: !actionTypeForm.reverseAction 
+                  })}
+                >
+                  <View style={[styles.checkbox, actionTypeForm.reverseAction && styles.checkboxChecked]}>
+                    {actionTypeForm.reverseAction && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Ação reversa (registra no time adversário)</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setActionTypeForm({ 
+                    ...actionTypeForm, 
+                    multiplePlayersAction: !actionTypeForm.multiplePlayersAction 
+                  })}
+                >
+                  <View style={[styles.checkbox, actionTypeForm.multiplePlayersAction && styles.checkboxChecked]}>
+                    {actionTypeForm.multiplePlayersAction && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Ação de múltiplos jogadores</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setActionTypeForm({ 
+                    ...actionTypeForm, 
+                    teamChangeAction: !actionTypeForm.teamChangeAction 
+                  })}
+                >
+                  <View style={[styles.checkbox, actionTypeForm.teamChangeAction && styles.checkboxChecked]}>
+                    {actionTypeForm.teamChangeAction && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Mudança no time</Text>
+                </TouchableOpacity>
+              </View>
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.cancelButton}
@@ -248,7 +343,12 @@ export default function ActionsScreen() {
                       name: '',
                       icon: '',
                       color: '#4CAF50',
-                      category: 'neutral'
+                      category: 'neutral',
+                      changePossessionAutomatically: false,
+                      requiresPlayerSelection: false,
+                      reverseAction: false,
+                      multiplePlayersAction: false,
+                      teamChangeAction: false
                     });
                   }}
                 >
@@ -735,7 +835,15 @@ const styles = StyleSheet.create({
   actionTypeCategory: {
     fontSize: 12,
     color: '#666',
-    textTransform: 'capitalize',
+    marginBottom: 8,
+  },
+  actionTypeOptions: {
+    marginTop: 4,
+  },
+  actionTypeOption: {
+    fontSize: 11,
+    color: '#888',
+    marginBottom: 2,
   },
   emptyState: {
     flex: 1,
@@ -839,5 +947,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+  },
+  optionsSection: {
+    marginBottom: 16,
+  },
+  optionsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#333',
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#2d5016',
+    borderColor: '#2d5016',
+  },
+  checkmark: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: '#333',
+    flex: 1,
   },
 });
