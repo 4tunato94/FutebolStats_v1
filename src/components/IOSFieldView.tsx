@@ -204,12 +204,12 @@ export function IOSFieldView() {
   return (
     <div className={cn(
       "flex h-full relative",
-      isFullscreen ? "fixed inset-0 z-50 bg-background safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden"
+      isFullscreen ? "fixed inset-0 z-50 bg-black safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden"
     )}>
       {/* Campo Principal */}
       <div className={cn(
-        "flex-1 relative",
-        isFullscreen && "w-screen h-screen"
+        "flex-1 relative flex items-center justify-center",
+        isFullscreen && "w-screen h-screen p-2"
       )}>
         <FieldGrid isFullscreen={isFullscreen} />
         

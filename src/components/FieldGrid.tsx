@@ -78,24 +78,35 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
     <div className={cn(
       "relative rounded-xl overflow-hidden shadow-field",
       isFullscreen 
-        ? "w-full h-full min-h-0 min-w-0 landscape:min-w-[800px] landscape:min-h-[500px]" 
-        : "aspect-[3/2] w-full max-w-4xl mx-auto"
+        ? "w-full h-full min-h-0 min-w-0" 
+        : "aspect-[16/10] w-full max-w-6xl mx-auto"
     )}>
       {/* Imagem do campo como fundo */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className={cn(
+          "absolute inset-0 bg-no-repeat",
+          isFullscreen 
+            ? "bg-contain bg-center" 
+            : "bg-cover bg-center"
+        )}
         style={{
-          backgroundImage: 'url(/campov1-horizontal.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundImage: 'url(/campov1-horizontal.png)'
         }}
       />
       
       {/* Overlay sutil para melhor contraste */}
-      <div className="absolute inset-0 bg-black/10" />
+      <div className={cn(
+        "absolute inset-0",
+        isFullscreen ? "bg-black/5" : "bg-black/10"
+      )} />
       
-      {/* Grid de zonas 20x13 invisível - sem espaçamento */}
-      <div className="absolute inset-0 grid grid-cols-20 grid-rows-13">
+      {/* Grid de zonas 20x13 - ajustado para não recortar */}
+      <div className={cn(
+        "absolute grid grid-cols-20 grid-rows-13",
+        isFullscreen 
+          ? "inset-4 md:inset-8 lg:inset-12" 
+          : "inset-2 md:inset-4"
+      )}>
         {Array.from({ length: 260 }, (_, index) => {
           const row = Math.floor(index / 20)
           const col = index % 20
@@ -114,7 +125,10 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
             >
               {/* Indicador de intensidade */}
               {getZoneIntensity(row, col).total > 0 && (
-                <div className="absolute top-0.5 right-0.5 w-2 h-2 bg-white rounded-full opacity-90 shadow-lg border border-gray-300" />
+                <div className={cn(
+                  "absolute bg-white rounded-full opacity-90 shadow-lg border border-gray-300",
+                  isFullscreen ? "top-1 right-1 w-3 h-3" : "top-0.5 right-0.5 w-2 h-2"
+                )} />
               )}
             </button>
           )

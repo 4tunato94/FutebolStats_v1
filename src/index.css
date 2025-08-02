@@ -96,6 +96,21 @@ input, select, textarea {
     -webkit-overflow-scrolling: touch;
   }
   
+  /* Fullscreen field optimization */
+  .safari-fullscreen {
+    height: 100vh;
+    height: -webkit-fill-available;
+    width: 100vw;
+    width: -webkit-fill-available;
+  }
+  
+  .safari-viewport-fill {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-width: 100vw;
+    min-width: -webkit-fill-available;
+  }
+  
   /* Notch safe areas for iPhone */
   .notch-safe-left {
     padding-left: max(env(safe-area-inset-left), 1rem);
@@ -103,6 +118,13 @@ input, select, textarea {
   
   .notch-safe-right {
     padding-right: max(env(safe-area-inset-right), 1rem);
+  }
+  
+  /* Field image optimization */
+  .field-fullscreen-bg {
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
   }
 }
 
