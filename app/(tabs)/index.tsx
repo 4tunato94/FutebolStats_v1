@@ -73,9 +73,11 @@ export default function HomeScreen() {
                     ]}
                     onPress={() => setTeamAId(team.id)}
                   >
-                    <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamPlayers}>{team.players.length} jogadores</Text>
+                    {team.logo ? (
+                      <Image source={{ uri: team.logo }} style={styles.teamLogo} />
+                    ) : (
+                      <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
+                    )}
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -93,9 +95,11 @@ export default function HomeScreen() {
                     ]}
                     onPress={() => setTeamBId(team.id)}
                   >
-                    <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamPlayers}>{team.players.length} jogadores</Text>
+                    {team.logo ? (
+                      <Image source={{ uri: team.logo }} style={styles.teamLogo} />
+                    ) : (
+                      <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
+                    )}
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -200,9 +204,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     borderRadius: 16,
     padding: 20,
-    marginHorizontal: 8,
-    minWidth: 140,
+    marginHorizontal: 4,
+    width: 80,
+    height: 80,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -211,22 +217,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f8f0',
   },
   teamColor: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginBottom: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
-  teamName: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 6,
-    color: '#333',
-  },
-  teamPlayers: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+  teamLogo: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   startButton: {
     backgroundColor: '#2d5016',

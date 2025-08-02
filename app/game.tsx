@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Play, Pause, Square, Clock, RotateCcw } from 'lucide-react-native';
+import { ArrowLeft, Play, Pause, Square, RotateCcw } from 'lucide-react-native';
 import { useFutebolStore } from '../stores/futebolStore';
 import { router } from 'expo-router';
 import FieldView from '../components/FieldView';
@@ -19,27 +19,53 @@ export default function GameScreen() {
   } = useFutebolStore();
   
   const [gameTime, setGameTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [showActions, setShowActions] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (currentMatch && !currentMatch.isPaused) {
+    if (isRunning) {
       interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - currentMatch.startTime.getTime()) / 1000);
-        setGameTime(elapsed);
-        updateMatchTime(elapsed);
+        setGameTime(prev => {
+          const newTime = prev + 1;
+          updateMatchTime(newTime);
+          return newTime;
+        });
       }, 1000);
     }
     
     return () => clearInterval(interval);
-  }, [currentMatch?.isPaused, currentMatch]);
+  }, [isRunning]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartStop = () => {
+    setIsRunning(!isRunning);
+  };
+
+  const handleReset = () => {
+    Alert.alert(
+      'Resetar Cronômetro',
+      'Tem certeza que deseja resetar o cronômetro?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Resetar', 
+          onPress: () => {
+            setGameTime(0);
+            setIsRunning(false);
+            updateMatchTime(0);
+          }
+        }
+      ]
+    );
   };
 
   const handleEndMatch = () => {
@@ -60,26 +86,14 @@ export default function GameScreen() {
     );
   };
 
-  const handlePauseResume = () => {
-    if (!currentMatch) return;
-    
-    if (currentMatch.isPaused) {
-      resumeMatch();
-    } else {
-      pauseMatch();
-    }
-  };
-
   const handleZonePress = (zone: string) => {
     setSelectedZone(zone);
     setShowActions(true);
+    setShowHistory(false);
   };
 
   const handleActionPress = (actionTypeId: string, teamId: string) => {
-    if (!currentMatch || !selectedZone) {
-      Alert.alert('Erro', 'Selecione uma zona do campo primeiro');
-      return;
-    }
+    if (!currentMatch || !selectedZone) return;
 
     const team = currentMatch.teamA.id === teamId ? currentMatch.teamA : currentMatch.teamB;
     const actionType = actionTypes.find(at => at.id === actionTypeId);
@@ -88,7 +102,6 @@ export default function GameScreen() {
 
     if (!actionType) return;
 
-    // Para ações rápidas, usar o primeiro jogador do time
     const player = team.players[0];
     if (!player) {
       Alert.alert('Erro', 'Time não possui jogadores');
@@ -110,117 +123,103 @@ export default function GameScreen() {
     setShowActions(false);
   };
 
-  const resetTimer = () => {
-    Alert.alert(
-      'Resetar Cronômetro',
-      'Tem certeza que deseja resetar o cronômetro?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Resetar', 
-          onPress: () => {
-            setGameTime(0);
-            updateMatchTime(0);
-          }
-        }
-      ]
-    );
-  };
-
   if (!currentMatch) {
     router.replace('/');
     return null;
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={handleEndMatch}>
+    <View style={styles.container}>
+      {/* Campo maximizado */}
+      <FieldView
+        onZonePress={handleZonePress}
+        selectedZone={selectedZone}
+        possession={currentMatch.possession}
+        teamAColor={currentMatch.teamA.colors.primary}
+        teamBColor={currentMatch.teamB.colors.primary}
+      />
+
+      {/* Cronômetro no topo centro */}
+      <View style={styles.timerContainer}>
+        <Text style={styles.gameTimer}>{formatTime(gameTime)}</Text>
+      </View>
+
+      {/* Controles laterais esquerdos */}
+      <View style={styles.leftControls}>
+        <TouchableOpacity style={styles.controlButton} onPress={handleEndMatch}>
           <ArrowLeft color="white" size={24} />
         </TouchableOpacity>
         
-        <View style={styles.matchInfo}>
-          <Text style={styles.matchTitle}>
-            {currentMatch.teamA.name} vs {currentMatch.teamB.name}
-          </Text>
-          <View style={styles.timerContainer}>
-            <Clock color="#90EE90" size={20} />
-            <Text style={styles.gameTimer}>{formatTime(gameTime)}</Text>
-            <TouchableOpacity onPress={resetTimer} style={styles.resetButton}>
-              <RotateCcw color="#90EE90" size={16} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <TouchableOpacity style={styles.controlButton} onPress={handleStartStop}>
+          {isRunning ? <Pause color="white" size={24} /> : <Play color="white" size={24} />}
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.controlButton} onPress={handleReset}>
+          <RotateCcw color="white" size={24} />
+        </TouchableOpacity>
 
-        <View style={styles.controls}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={handlePauseResume}
-          >
-            {currentMatch.isPaused ? 
-              <Play color="white" size={20} /> : 
-              <Pause color="white" size={20} />
-            }
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={handleEndMatch}
-          >
-            <Square color="white" size={20} />
-          </TouchableOpacity>
-        </View>
+        {/* Botões de posse - apenas logos */}
+        <TouchableOpacity
+          style={[
+            styles.possessionButton,
+            currentMatch.possession === 'teamA' && styles.activePossession
+          ]}
+          onPress={() => setPossession(currentMatch.possession === 'teamA' ? null : 'teamA')}
+        >
+          {currentMatch.teamA.logo ? (
+            <Image source={{ uri: currentMatch.teamA.logo }} style={styles.teamLogo} />
+          ) : (
+            <View style={[styles.teamColor, { backgroundColor: currentMatch.teamA.colors.primary }]} />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.possessionButton,
+            currentMatch.possession === 'teamB' && styles.activePossession
+          ]}
+          onPress={() => setPossession(currentMatch.possession === 'teamB' ? null : 'teamB')}
+        >
+          {currentMatch.teamB.logo ? (
+            <Image source={{ uri: currentMatch.teamB.logo }} style={styles.teamLogo} />
+          ) : (
+            <View style={[styles.teamColor, { backgroundColor: currentMatch.teamB.colors.primary }]} />
+          )}
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Possession Control */}
-        <View style={styles.possessionControl}>
+      {/* Aba lateral direita */}
+      <View style={styles.rightPanel}>
+        <View style={styles.tabButtons}>
           <TouchableOpacity
-            style={[
-              styles.possessionButton,
-              { backgroundColor: currentMatch.teamA.colors.primary },
-              currentMatch.possession === 'teamA' && styles.activePossession
-            ]}
-            onPress={() => setPossession(currentMatch.possession === 'teamA' ? null : 'teamA')}
+            style={[styles.tabButton, showActions && styles.activeTab]}
+            onPress={() => {
+              setShowActions(!showActions);
+              setShowHistory(false);
+            }}
           >
-            <Text style={styles.possessionText}>{currentMatch.teamA.name}</Text>
-            <Text style={styles.possessionLabel}>Posse</Text>
+            <Text style={styles.tabText}>Ações</Text>
           </TouchableOpacity>
-
+          
           <TouchableOpacity
-            style={[
-              styles.possessionButton,
-              { backgroundColor: currentMatch.teamB.colors.primary },
-              currentMatch.possession === 'teamB' && styles.activePossession
-            ]}
-            onPress={() => setPossession(currentMatch.possession === 'teamB' ? null : 'teamB')}
+            style={[styles.tabButton, showHistory && styles.activeTab]}
+            onPress={() => {
+              setShowHistory(!showHistory);
+              setShowActions(false);
+            }}
           >
-            <Text style={styles.possessionText}>{currentMatch.teamB.name}</Text>
-            <Text style={styles.possessionLabel}>Posse</Text>
+            <Text style={styles.tabText}>Histórico</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Field */}
-        <FieldView
-          onZonePress={handleZonePress}
-          selectedZone={selectedZone}
-          possession={currentMatch.possession}
-          teamAColor={currentMatch.teamA.colors.primary}
-          teamBColor={currentMatch.teamB.colors.primary}
-        />
-
-        {/* Quick Actions */}
-        {showActions && selectedZone && (
-          <View style={styles.quickActions}>
-            <Text style={styles.quickActionsTitle}>
-              Ações Rápidas - Zona: {selectedZone}
-            </Text>
-            
-            <View style={styles.teamActions}>
-              <View style={styles.teamSection}>
-                <View style={[styles.teamHeader, { backgroundColor: currentMatch.teamA.colors.primary }]}>
-                  <Text style={styles.teamHeaderText}>{currentMatch.teamA.name}</Text>
-                </View>
+        {/* Conteúdo da aba */}
+        {(showActions || showHistory) && (
+          <View style={styles.panelContent}>
+            {showActions && selectedZone && (
+              <ScrollView style={styles.actionsPanel}>
+                <Text style={styles.panelTitle}>Zona: {selectedZone}</Text>
+                
+                <Text style={styles.teamTitle}>{currentMatch.teamA.name}</Text>
                 <View style={styles.actionButtons}>
                   {actionTypes.slice(0, 6).map(actionType => (
                     <TouchableOpacity
@@ -233,12 +232,8 @@ export default function GameScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
-              </View>
 
-              <View style={styles.teamSection}>
-                <View style={[styles.teamHeader, { backgroundColor: currentMatch.teamB.colors.primary }]}>
-                  <Text style={styles.teamHeaderText}>{currentMatch.teamB.name}</Text>
-                </View>
+                <Text style={styles.teamTitle}>{currentMatch.teamB.name}</Text>
                 <View style={styles.actionButtons}>
                   {actionTypes.slice(0, 6).map(actionType => (
                     <TouchableOpacity
@@ -251,22 +246,25 @@ export default function GameScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
-              </View>
-            </View>
+              </ScrollView>
+            )}
 
-            <TouchableOpacity
-              style={styles.closeActionsButton}
-              onPress={() => {
-                setShowActions(false);
-                setSelectedZone(null);
-              }}
-            >
-              <Text style={styles.closeActionsText}>Fechar</Text>
-            </TouchableOpacity>
+            {showHistory && (
+              <ScrollView style={styles.historyPanel}>
+                <Text style={styles.panelTitle}>Histórico</Text>
+                {currentMatch.actions.slice(-10).reverse().map(action => (
+                  <View key={action.id} style={styles.historyItem}>
+                    <Text style={styles.historyTime}>{action.minute}:{action.second.toString().padStart(2, '0')}</Text>
+                    <Text style={styles.historyAction}>{action.action}</Text>
+                    <Text style={styles.historyPlayer}>{action.playerName}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
           </View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
@@ -275,60 +273,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#2d5016',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#2d5016',
-  },
-  headerButton: {
-    padding: 8,
-  },
-  matchInfo: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  matchTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-  },
   timerContainer: {
-    flexDirection: 'row',
+    position: 'absolute',
+    top: 50,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    marginTop: 4,
+    zIndex: 10,
   },
   gameTimer: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#90EE90',
-    marginHorizontal: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
   },
-  resetButton: {
-    padding: 4,
-  },
-  controls: {
+  leftControls: {
+    position: 'absolute',
+    left: 20,
+    bottom: 20,
     flexDirection: 'row',
+    gap: 10,
+    zIndex: 10,
   },
   controlButton: {
-    padding: 8,
-    marginLeft: 8,
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  possessionControl: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 25,
+    padding: 15,
   },
   possessionButton: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 25,
+    padding: 10,
     opacity: 0.7,
   },
   activePossession: {
@@ -336,45 +314,64 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#FFD700',
   },
-  possessionText: {
+  teamLogo: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  teamColor: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  rightPanel: {
+    position: 'absolute',
+    right: 0,
+    top: 100,
+    bottom: 0,
+    width: 250,
+    zIndex: 10,
+  },
+  tabButtons: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.8)',
+  },
+  tabButton: {
+    flex: 1,
+    padding: 15,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  tabText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
   },
-  possessionLabel: {
+  panelContent: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+  },
+  actionsPanel: {
+    flex: 1,
+    padding: 15,
+  },
+  historyPanel: {
+    flex: 1,
+    padding: 15,
+  },
+  panelTitle: {
     color: 'white',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  quickActions: {
-    backgroundColor: 'white',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-  },
-  quickActionsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    color: '#333',
+    marginBottom: 15,
   },
-  teamActions: {
-    gap: 16,
-  },
-  teamSection: {
-    marginBottom: 16,
-  },
-  teamHeader: {
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  teamHeaderText: {
+  teamTitle: {
     color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
     fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 10,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -382,32 +379,37 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    flex: 1,
-    minWidth: '30%',
     borderRadius: 8,
-    padding: 12,
+    padding: 8,
     alignItems: 'center',
-    marginBottom: 8,
+    minWidth: 70,
   },
   actionEmoji: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: 16,
+    marginBottom: 2,
   },
   actionButtonText: {
     color: 'white',
-    fontWeight: 'bold',
     fontSize: 10,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
-  closeActionsButton: {
-    backgroundColor: '#666',
+  historyItem: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 16,
+    padding: 10,
+    marginBottom: 8,
   },
-  closeActionsText: {
+  historyTime: {
+    color: '#90EE90',
+    fontWeight: 'bold',
+  },
+  historyAction: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  historyPlayer: {
+    color: '#ccc',
+    fontSize: 12,
   },
 });

@@ -12,7 +12,10 @@ const PRESET_COLORS = [
   '#800000', '#008000', '#000080', '#808000', '#800080', '#008080',
   '#FFA500', '#FFC0CB', '#A52A2A', '#808080', '#000000', '#FFFFFF',
   '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD',
-  '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'
+  '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA',
+  '#E74C3C', '#3498DB', '#2ECC71', '#F39C12', '#9B59B6', '#1ABC9C',
+  '#34495E', '#E67E22', '#95A5A6', '#16A085', '#27AE60', '#2980B9',
+  '#8E44AD', '#F1C40F', '#E74C3C', '#ECF0F1', '#BDC3C7', '#7F8C8D'
 ];
 
 export default function ColorPicker({ color, onColorChange, label }: ColorPickerProps) {

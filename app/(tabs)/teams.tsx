@@ -418,11 +418,13 @@ export default function TeamsScreen() {
               {'\n\n'}Exemplo:
               {'\n'}João Silva, 10, Atacante
               {'\n'}Pedro Santos, 9, Meio-campo
+              {'\n'}Carlos Oliveira, 1, Goleiro
+              {'\n'}Ana Costa, 7, Lateral
             </Text>
             
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="João Silva, 10, Atacante&#10;Pedro Santos, 9, Meio-campo"
+              placeholder="João Silva, 10, Atacante&#10;Pedro Santos, 9, Meio-campo&#10;Carlos Oliveira, 1, Goleiro"
               value={bulkPlayersText}
               onChangeText={setBulkPlayersText}
               multiline

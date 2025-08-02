@@ -150,10 +150,10 @@ export const useFutebolStore = create<FutebolStore>()(
         
         playerLines.forEach(line => {
           const parts = line.split(',').map(part => part.trim());
-          if (parts.length >= 2) {
+          if (parts.length >= 3) {
             const name = parts[0];
             const number = parseInt(parts[1]) || 0;
-            const position = parts[2] || 'Jogador';
+            const position = parts[2];
             
             players.push({
               id: `${Date.now()}-${Math.random()}`,

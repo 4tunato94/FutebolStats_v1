@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import * as ImagePickerExpo from 'expo-image-picker';
-import { Camera, Upload } from 'lucide-react-native';
+import { Upload } from 'lucide-react-native';
 
 interface ImagePickerProps {
   imageUri?: string;
