@@ -22,6 +22,7 @@ interface FutebolState {
   loadSavedGame: (game: SavedGame) => void
   
   removeAction: (actionId: string) => void
+  updateAction: (actionId: string, updates: Partial<GameAction>) => void
   updateGameAction: (gameId: string, actionId: string, updates: Partial<GameAction>) => void
   deleteGameAction: (gameId: string, actionId: string) => void
   
@@ -189,6 +190,15 @@ export const useFutebolStore = create<FutebolState>()(
         currentMatch: state.currentMatch ? {
           ...state.currentMatch,
           actions: state.currentMatch.actions.filter(action => action.id !== actionId)
+        } : null
+      })),
+      
+      updateAction: (actionId, updates) => set((state) => ({
+        currentMatch: state.currentMatch ? {
+          ...state.currentMatch,
+          actions: state.currentMatch.actions.map(action => 
+            action.id === actionId ? { ...action, ...updates } : action
+          )
         } : null
       })),
       

@@ -551,53 +551,156 @@ export function IOSFieldView() {
               </div>
               
               {/* Lista das últimas 10 ações */}
-              <div className="space-y-2 max-h-80 overflow-y-auto">
+              <div className="space-y-2 max-h-72 overflow-y-auto">
                 {currentMatch.actions
-                  .slice(-10)
+                  .slice(-8)
                   .reverse()
                   .map((action, index) => {
                     const team = action.teamId === currentMatch.teamA.id ? currentMatch.teamA : currentMatch.teamB
+                    const playerInfo = getPlayerInfo(action.teamId, action.playerId)
+                    const isEditing = editingAction === action.id
+                    
                     return (
-                      <div key={action.id} className="flex items-center space-x-2 p-3 rounded-lg bg-muted/30 border border-border/30">
-                        <img 
-                          src={team.logoUrl} 
-                          alt={team.name}
-                          className="w-5 h-5 object-contain flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">
-                            {action.actionName || (action.type === 'possession' ? 'Posse de Bola' : 'Ação')}
+                      <div key={action.id} className="p-3 rounded-lg bg-muted/30 border border-border/30">
+                        {isEditing ? (
+                          <div className="space-y-3">
+                            {/* Edição de Time */}
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground">Time</label>
+                              <Select
+                                value={editForm.teamId || action.teamId}
+                                onValueChange={(value) => setEditForm(prev => ({ ...prev, teamId: value }))}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={currentMatch.teamA.id}>{currentMatch.teamA.name}</SelectItem>
+                                  <SelectItem value={currentMatch.teamB.id}>{currentMatch.teamB.name}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            {/* Edição de Ação */}
+                            {action.type === 'specific' && (
+                              <div>
+                                <label className="text-xs font-medium text-muted-foreground">Ação</label>
+                                <Select
+                                  value={editForm.actionName || action.actionName || ''}
+                                  onValueChange={(value) => setEditForm(prev => ({ ...prev, actionName: value }))}
+                                >
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {actionTypes.map(actionType => (
+                                      <SelectItem key={actionType.id} value={actionType.name}>
+                                        {actionType.icon} {actionType.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                            
+                            {/* Edição de Jogador */}
+                            {action.type === 'specific' && action.playerId && (
+                              <div>
+                                <label className="text-xs font-medium text-muted-foreground">Jogador</label>
+                                <Select
+                                  value={editForm.playerId || action.playerId || ''}
+                                  onValueChange={(value) => setEditForm(prev => ({ ...prev, playerId: value }))}
+                                >
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {((editForm.teamId === currentMatch.teamA.id || (!editForm.teamId && action.teamId === currentMatch.teamA.id)) 
+                                      ? currentMatch.teamA.players 
+                                      : currentMatch.teamB.players
+                                    ).map(player => (
+                                      <SelectItem key={player.id} value={player.id}>
+                                        #{player.number} {player.name} • {player.position}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                            
+                            {/* Edição de Tempo */}
+                            <div>
+                              <label className="text-xs font-medium text-muted-foreground">Tempo (segundos)</label>
+                              <Input
+                                type="number"
+                                value={editForm.timestamp !== undefined ? editForm.timestamp : action.timestamp}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, timestamp: parseInt(e.target.value) || 0 }))}
+                                className="h-8 text-xs"
+                                min="0"
+                              />
+                            </div>
+                            
+                            {/* Botões de Ação */}
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleSaveEdit}
+                                className="flex-1 h-7 text-xs"
+                              >
+                                <Save className="h-3 w-3 mr-1" />
+                                Salvar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                                className="flex-1 h-7 text-xs"
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Cancelar
+                              </Button>
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {team.name} • {formatTime(action.timestamp)}
+                        ) : (
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-medium truncate">
+                                {action.actionName || (action.type === 'possession' ? 'Posse de Bola' : 'Ação')}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {team.name} • {formatTime(action.timestamp)}
+                              </div>
+                              {playerInfo && (
+                                <div className="text-xs text-primary mt-1 flex items-center">
+                                  <User className="h-3 w-3 mr-1" />
+                                  {playerInfo}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col space-y-1 ml-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditAction(action)}
+                                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  removeAction(action.id)
+                                  showNotification('Ação removida', 'success')
+                                }}
+                                className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex space-x-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              // Editar ação
-                              // TODO: Implementar edição de ação
-                              showNotification('Edição em desenvolvimento', 'info')
-                            }}
-                            className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              // Remover ação do histórico
-                              removeAction(action.id)
-                              showNotification('Ação removida', 'success')
-                            }}
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        )}
                       </div>
                     )
                   })}
