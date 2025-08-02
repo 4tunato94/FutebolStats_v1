@@ -208,6 +208,75 @@ export default function ActionsScreen() {
               ))}
             </View>
 
+            <View style={styles.optionsSection}>
+              <Text style={styles.optionsTitle}>Opções</Text>
+              
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => setActionTypeForm({ 
+                  ...actionTypeForm, 
+                  changePossessionAutomatically: !actionTypeForm.changePossessionAutomatically 
+                })}
+              >
+                <View style={[styles.checkbox, actionTypeForm.changePossessionAutomatically && styles.checkboxChecked]}>
+                  {actionTypeForm.changePossessionAutomatically && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Mudar posse automaticamente</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => setActionTypeForm({ 
+                  ...actionTypeForm, 
+                  requiresPlayerSelection: !actionTypeForm.requiresPlayerSelection 
+                })}
+              >
+                <View style={[styles.checkbox, actionTypeForm.requiresPlayerSelection && styles.checkboxChecked]}>
+                  {actionTypeForm.requiresPlayerSelection && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Requer seleção de jogador</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => setActionTypeForm({ 
+                  ...actionTypeForm, 
+                  reverseAction: !actionTypeForm.reverseAction 
+                })}
+              >
+                <View style={[styles.checkbox, actionTypeForm.reverseAction && styles.checkboxChecked]}>
+                  {actionTypeForm.reverseAction && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Ação Reversa (Registra no time adversário)</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => setActionTypeForm({ 
+                  ...actionTypeForm, 
+                  multiplePlayersAction: !actionTypeForm.multiplePlayersAction 
+                })}
+              >
+                <View style={[styles.checkbox, actionTypeForm.multiplePlayersAction && styles.checkboxChecked]}>
+                  {actionTypeForm.multiplePlayersAction && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Ação de Mais de um jogador</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => setActionTypeForm({ 
+                  ...actionTypeForm, 
+                  teamChangeAction: !actionTypeForm.teamChangeAction 
+                })}
+              >
+                <View style={[styles.checkbox, actionTypeForm.teamChangeAction && styles.checkboxChecked]}>
+                  {actionTypeForm.teamChangeAction && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.checkboxLabel}>Mudança no time</Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
