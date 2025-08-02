@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Edit, Trash2, Users, Image as ImageIcon } from 'lucide-react-native';
+import { Plus, CreditCard as Edit, Trash2, Users, Image as ImageIcon } from 'lucide-react-native';
 import { useFutebolStore, Team, Player } from '../../stores/futebolStore';
 import ColorPicker from '../../components/ColorPicker';
 import ImagePicker from '../../components/ImagePicker';
