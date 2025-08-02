@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { History, Clock, Users, Zap, Edit, Trash2, Save, X } from 'lucide-react-native';
+import { History, Clock, Users, Zap, CreditCard as Edit, Trash2, Save, X } from 'lucide-react-native';
 import { useFutebolStore } from '../../stores/futebolStore';
 
 export default function HistoryScreen() {
