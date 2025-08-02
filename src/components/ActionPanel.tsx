@@ -143,55 +143,55 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-6">
       {currentMatch.currentPossession ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-4">
             {actionTypes.filter(actionType => actionType && actionType.id).map((actionType) => (
               <Button
                 key={actionType.id}
                 variant="outline"
                 onClick={() => handleActionClick(actionType)}
                 className={cn(
-                  "h-14 rounded-xl flex flex-col items-center justify-center p-2 touch-target no-select",
+                  "h-20 rounded-2xl flex flex-col items-center justify-center p-4 touch-target no-select",
                   "border-2 border-border/50 hover:border-primary/50",
                   "transition-all duration-200 active:scale-[0.95]",
                   "bg-card hover:bg-accent"
                 )}
               >
-                <span className="text-base mb-1">{actionType.icon}</span>
-                <span className="text-xs font-medium text-center leading-tight ios-text-wrap px-1">
+                <span className="text-2xl mb-2">{actionType.icon}</span>
+                <span className="text-sm font-semibold text-center leading-tight ios-text-wrap px-2">
                   {actionType.name}
                 </span>
                 {actionType.changesPossession && (
-                  <div className="w-1 h-1 bg-primary rounded-full mt-1"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                 )}
               </Button>
             ))}
           </div>
           
           {/* Informações adicionais */}
-          <div className="mt-4 p-3 bg-muted/20 rounded-lg border border-border/30">
-            <div className="text-xs text-muted-foreground space-y-1">
+          <div className="mt-6 p-5 bg-muted/20 rounded-2xl border-2 border-border/30">
+            <div className="text-sm text-muted-foreground space-y-3">
               <div className="flex items-center justify-between">
-                <span>Ações disponíveis:</span>
-                <span className="font-medium">{actionTypes.length}</span>
+                <span className="font-medium">Ações disponíveis:</span>
+                <span className="font-bold text-base">{actionTypes.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span>Tempo atual:</span>
-                <span className="font-mono font-medium">{formatTime(currentMatch.currentTime)}</span>
+                <span className="font-medium">Tempo atual:</span>
+                <span className="font-mono font-bold text-base">{formatTime(currentMatch.currentTime)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span>Ações registradas:</span>
-                <span className="font-medium">{currentMatch.actions.length}</span>
+                <span className="font-medium">Ações registradas:</span>
+                <span className="font-bold text-base">{currentMatch.actions.length}</span>
               </div>
             </div>
           </div>
         </div>
       ) : (
         <div className="text-center py-12">
-          <Target className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground ios-text-wrap">
+          <Target className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <p className="text-lg text-muted-foreground ios-text-wrap">
             Selecione a posse de bola para registrar ações
           </p>
         </div>

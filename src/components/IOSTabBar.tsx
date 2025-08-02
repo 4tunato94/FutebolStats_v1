@@ -18,7 +18,7 @@ const tabs = [
 export function IOSTabBar({ activeTab, onTabChange, className }: IOSTabBarProps) {
   return (
     <div className={cn(
-      "bg-background/95 backdrop-blur-md border-t border-border/50 px-2 py-2 safe-area-bottom",
+      "bg-background/95 backdrop-blur-md border-t border-border/50 px-3 py-3 pb-safe",
       className
     )}>
       <div className="flex items-center justify-around">
@@ -30,20 +30,20 @@ export function IOSTabBar({ activeTab, onTabChange, className }: IOSTabBarProps)
             <Button
               key={tab.id}
               variant="ghost"
-              size="sm"
+              size="lg"
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center space-y-1 h-auto py-3 px-4 rounded-lg transition-all touch-target no-select",
+                "flex flex-col items-center space-y-1 h-auto py-4 px-6 rounded-xl transition-all touch-target no-select min-h-[60px]",
                 isActive 
-                  ? "text-primary bg-primary/10" 
+                  ? "text-primary bg-primary/15 shadow-sm" 
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Icon className={cn(
-                "h-5 w-5 transition-all",
-                isActive && "scale-110"
+                "h-6 w-6 transition-all",
+                isActive && "scale-110 text-primary"
               )} />
-              <span className="text-xs font-medium ios-text-fixed">{tab.label}</span>
+              <span className="text-sm font-medium ios-text-fixed">{tab.label}</span>
             </Button>
           )
         })}

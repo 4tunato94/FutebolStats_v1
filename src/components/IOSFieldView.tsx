@@ -438,12 +438,12 @@ export function IOSFieldView() {
         {/* Cronômetro Central */}
         <div className={cn(
           "absolute left-1/2 transform -translate-x-1/2 pointer-events-none z-30",
-          isLandscape ? "top-2" : "top-4"
+          isLandscape ? "top-4" : "top-6"
         )}>
-          <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2">
+          <div className="bg-background/95 backdrop-blur-md border-2 border-border/50 rounded-3xl px-6 py-3 shadow-lg">
             <div className={cn(
               "font-mono font-bold text-center",
-              isLandscape ? "text-xs" : "text-sm"
+              isLandscape ? "text-base" : "text-lg"
             )}>
               {formatTime(timer)}
             </div>
@@ -454,29 +454,31 @@ export function IOSFieldView() {
       {/* Botões Laterais - Canto Inferior Esquerdo */}
       <div className={cn(
         "absolute left-4 z-40 flex",
-        isLandscape ? "bottom-2 space-x-2" : "bottom-4 space-x-3"
+        isLandscape ? "bottom-4 space-x-3" : "bottom-6 space-x-4"
       )}>
         {/* Cronômetro */}
         <Button
           variant="outline"
-          size="icon"
+          size="lg"
           onClick={handleTimerClick}
           className={cn(
-            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
-            isLandscape ? "h-10 w-10" : "h-12 w-12"
+            "rounded-full bg-background/95 backdrop-blur-md border-2 border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
+            isLandscape ? "h-14 w-14" : "h-16 w-16"
           )}
         >
-          <Clock className="h-5 w-5" />
+          <Clock className={cn(
+            isLandscape ? "h-6 w-6" : "h-7 w-7"
+          )} />
         </Button>
         
         {/* Posse de Bola - Mostra logo do time selecionado */}
         <Button
           variant="outline"
-          size="icon"
+          size="lg"
           onClick={togglePossession}
           className={cn(
-            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1 active:scale-95 transition-transform",
-            isLandscape ? "h-10 w-10" : "h-12 w-12"
+            "rounded-full bg-background/95 backdrop-blur-md border-2 border-border/50 touch-target shadow-lg p-2 active:scale-95 transition-transform",
+            isLandscape ? "h-14 w-14" : "h-16 w-16"
           )}
         >
           {currentPossessionTeam ? (
@@ -485,70 +487,78 @@ export function IOSFieldView() {
               alt={`${currentPossessionTeam.name} logo`}
               className={cn(
                 "object-contain",
-                isLandscape ? "w-6 h-6" : "w-7 h-7"
+                isLandscape ? "w-8 h-8" : "w-10 h-10"
               )}
             />
           ) : (
-            <Users className="h-5 w-5" />
+            <Users className={cn(
+              isLandscape ? "h-6 w-6" : "h-7 w-7"
+            )} />
           )}
         </Button>
         
         {/* Registro de Ação */}
         <Button
           variant={activePanel === 'actions' ? 'default' : 'outline'}
-          size="icon"
+          size="lg"
           onClick={() => openPanel('actions')}
           className={cn(
-            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
-            isLandscape ? "h-10 w-10" : "h-12 w-12"
+            "rounded-full bg-background/95 backdrop-blur-md border-2 border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
+            isLandscape ? "h-14 w-14" : "h-16 w-16"
           )}
         >
-          <Zap className="h-5 w-5" />
+          <Zap className={cn(
+            isLandscape ? "h-6 w-6" : "h-7 w-7"
+          )} />
         </Button>
 
         {/* Histórico de Ações */}
         <Button
           variant={activePanel === 'history' ? 'default' : 'outline'}
-          size="icon"
+          size="lg"
           onClick={() => openPanel('history')}
           className={cn(
-            "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
-            isLandscape ? "h-10 w-10" : "h-12 w-12"
+            "rounded-full bg-background/95 backdrop-blur-md border-2 border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
+            isLandscape ? "h-14 w-14" : "h-16 w-16"
           )}
         >
-          <History className="h-5 w-5" />
+          <History className={cn(
+            isLandscape ? "h-6 w-6" : "h-7 w-7"
+          )} />
         </Button>
       </div>
 
       {/* Painel Lateral Direito - Menor */}
       <div className={cn(
-        "fixed right-0 top-0 h-full bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
-        isLandscape ? "w-48" : "w-56 sm:w-64",
+        "fixed right-0 top-0 h-full bg-background/95 backdrop-blur-md border-l-2 border-border/50 transform transition-transform duration-300 z-30",
+        isLandscape ? "w-64" : "w-80 sm:w-96",
         showSidebar ? "translate-x-0" : "translate-x-full"
       )}>
         {/* Header do Painel */}
-        <div className="p-3 border-b border-border/50">
+        <div className="p-5 border-b-2 border-border/50">
           <div className="flex items-center justify-between">
             <h2 className={cn(
               "font-semibold",
-              isLandscape ? "text-xs" : "text-sm"
+              isLandscape ? "text-base" : "text-lg"
             )}>
               {activePanel === 'actions' && 'Registrar Ação'}
               {activePanel === 'history' && 'Histórico de Ações'}
             </h2>
             <Button
               variant="ghost"
-              size="icon"
+              size="lg"
               onClick={() => {
                 setShowSidebar(false)
                 setActivePanel(null)
               }}
               className={cn(
                 "rounded-full",
-                isLandscape ? "h-5 w-5" : "h-6 w-6"
+                isLandscape ? "h-10 w-10" : "h-12 w-12"
               )}
             >
-              <X className="h-3 w-3" />
+              <X className={cn(
+                isLandscape ? "h-5 w-5" : "h-6 w-6"
+              )} />
             </Button>
           </div>
         </div>
@@ -556,22 +566,22 @@ export function IOSFieldView() {
         {/* Conteúdo do Painel Ativo */}
         <div className={cn(
           "flex-1 overflow-y-auto",
-          isLandscape ? "p-2" : "p-3"
+          isLandscape ? "p-4" : "p-5"
         )}>
           {activePanel === 'actions' && (
             <div className={cn(
-              isLandscape ? "space-y-2" : "space-y-4"
+              isLandscape ? "space-y-4" : "space-y-6"
             )}>
               <div className="text-center mb-4">
                 <h3 className={cn(
                   "font-semibold text-muted-foreground mb-2",
-                  isLandscape ? "text-xs" : "text-sm"
+                  isLandscape ? "text-sm" : "text-base"
                 )}>Registrar Ação</h3>
                 {currentMatch.currentPossession && (
-                  <div className="p-2 bg-muted/30 rounded-lg text-center">
+                  <div className="p-3 bg-muted/30 rounded-2xl text-center">
                     <span className={cn(
                       "font-medium",
-                      isLandscape ? "text-xs" : "text-xs"
+                      isLandscape ? "text-sm" : "text-base"
                     )}>{currentPossessionTeam?.name}</span>
                   </div>
                 )}
@@ -579,11 +589,11 @@ export function IOSFieldView() {
               {currentMatch.currentPossession ? (
                 <ActionPanel onClose={handleActionComplete} />
               ) : (
-                <div className="text-center py-6">
-                  <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className={cn(
                     "text-muted-foreground",
-                    isLandscape ? "text-xs" : "text-xs"
+                    isLandscape ? "text-sm" : "text-base"
                   )}>
                     Selecione a posse de bola primeiro
                   </p>
@@ -594,18 +604,18 @@ export function IOSFieldView() {
 
           {activePanel === 'history' && (
             <div className={cn(
-              isLandscape ? "space-y-2" : "space-y-3"
+              isLandscape ? "space-y-4" : "space-y-6"
             )}>
               <div className="text-center mb-4">
                 <h3 className={cn(
                   "font-semibold text-muted-foreground mb-2",
-                  isLandscape ? "text-xs" : "text-sm"
+                  isLandscape ? "text-sm" : "text-base"
                 )}>
                   Últimas ações registradas
                 </h3>
                 <div className={cn(
                   "text-muted-foreground",
-                  isLandscape ? "text-xs" : "text-xs"
+                  isLandscape ? "text-sm" : "text-base"
                 )}>
                   Total: {currentMatch.actions.length} ações
                 </div>
@@ -614,7 +624,7 @@ export function IOSFieldView() {
               {/* Lista das últimas 10 ações */}
               <div className={cn(
                 "overflow-y-auto",
-                isLandscape ? "space-y-1 max-h-48" : "space-y-2 max-h-72"
+                isLandscape ? "space-y-3 max-h-64" : "space-y-4 max-h-96"
               )}>
                 {currentMatch.actions
                   .slice(-8)
@@ -626,26 +636,26 @@ export function IOSFieldView() {
                     
                     return (
                       <div key={action.id} className={cn(
-                        "rounded-lg bg-muted/30 border border-border/30",
-                        isLandscape ? "p-2" : "p-3"
+                        "rounded-2xl bg-muted/30 border-2 border-border/30",
+                        isLandscape ? "p-3" : "p-4"
                       )}>
                         {isEditing ? (
                           <div className={cn(
-                            isLandscape ? "space-y-2" : "space-y-3"
+                            isLandscape ? "space-y-3" : "space-y-4"
                           )}>
                             {/* Edição de Time */}
                             <div>
                               <label className={cn(
                                 "font-medium text-muted-foreground",
-                                isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-sm" : "text-base"
                               )}>Time</label>
                               <Select
                                 value={editForm.teamId || action.teamId}
                                 onValueChange={(value) => setEditForm(prev => ({ ...prev, teamId: value }))}
                               >
                                 <SelectTrigger className={cn(
-                                  "text-xs",
-                                  isLandscape ? "h-7" : "h-8"
+                                  "text-sm rounded-xl",
+                                  isLandscape ? "h-10" : "h-12"
                                 )}>
                                   <SelectValue />
                                 </SelectTrigger>
@@ -661,15 +671,15 @@ export function IOSFieldView() {
                               <div>
                                 <label className={cn(
                                   "font-medium text-muted-foreground",
-                                  isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-sm" : "text-base"
                                 )}>Ação</label>
                                 <Select
                                   value={editForm.actionName || action.actionName || ''}
                                   onValueChange={(value) => setEditForm(prev => ({ ...prev, actionName: value }))}
                                 >
                                   <SelectTrigger className={cn(
-                                    "text-xs",
-                                    isLandscape ? "h-7" : "h-8"
+                                    "text-sm rounded-xl",
+                                    isLandscape ? "h-10" : "h-12"
                                   )}>
                                     <SelectValue />
                                   </SelectTrigger>
@@ -689,15 +699,15 @@ export function IOSFieldView() {
                               <div>
                                 <label className={cn(
                                   "font-medium text-muted-foreground",
-                                  isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-sm" : "text-base"
                                 )}>Jogador</label>
                                 <Select
                                   value={editForm.playerId || action.playerId || ''}
                                   onValueChange={(value) => setEditForm(prev => ({ ...prev, playerId: value }))}
                                 >
                                   <SelectTrigger className={cn(
-                                    "text-xs",
-                                    isLandscape ? "h-7" : "h-8"
+                                    "text-sm rounded-xl",
+                                    isLandscape ? "h-10" : "h-12"
                                   )}>
                                     <SelectValue />
                                   </SelectTrigger>
@@ -719,9 +729,9 @@ export function IOSFieldView() {
                             <div>
                               <label className={cn(
                                 "font-medium text-muted-foreground",
-                                isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-sm" : "text-base"
                               )}>Tempo</label>
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-3">
                                 <div className="flex-1">
                                   <Input
                                     type="number"
@@ -732,8 +742,8 @@ export function IOSFieldView() {
                                       setEditForm(prev => ({ ...prev, timestamp: mins * 60 + secs }))
                                     }}
                                     className={cn(
-                                      "text-xs",
-                                      isLandscape ? "h-7" : "h-8"
+                                      "text-sm rounded-xl",
+                                      isLandscape ? "h-10" : "h-12"
                                     )}
                                     min="0"
                                     placeholder="Min"
@@ -741,7 +751,7 @@ export function IOSFieldView() {
                                 </div>
                                 <span className={cn(
                                   "text-muted-foreground self-center",
-                                  isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-sm" : "text-base"
                                 )}>:</span>
                                 <div className="flex-1">
                                   <Input
@@ -753,8 +763,8 @@ export function IOSFieldView() {
                                       setEditForm(prev => ({ ...prev, timestamp: mins * 60 + secs }))
                                     }}
                                     className={cn(
-                                      "text-xs",
-                                      isLandscape ? "h-7" : "h-8"
+                                      "text-sm rounded-xl",
+                                      isLandscape ? "h-10" : "h-12"
                                     )}
                                     min="0"
                                     max="59"
@@ -765,29 +775,29 @@ export function IOSFieldView() {
                             </div>
                             
                             {/* Botões de Ação */}
-                            <div className="flex space-x-2">
+                            <div className="flex space-x-3">
                               <Button
                                 variant="default"
-                                size="sm"
+                                size="lg"
                                 onClick={handleSaveEdit}
                                 className={cn(
-                                  "flex-1 text-xs",
-                                  isLandscape ? "h-6" : "h-7"
+                                  "flex-1 text-sm rounded-xl",
+                                  isLandscape ? "h-10" : "h-12"
                                 )}
                               >
-                                <Save className="h-3 w-3 mr-1" />
+                                <Save className="h-4 w-4 mr-2" />
                                 Salvar
                               </Button>
                               <Button
                                 variant="outline"
-                                size="sm"
+                                size="lg"
                                 onClick={handleCancelEdit}
                                 className={cn(
-                                  "flex-1 text-xs",
-                                  isLandscape ? "h-6" : "h-7"
+                                  "flex-1 text-sm rounded-xl",
+                                  isLandscape ? "h-10" : "h-12"
                                 )}
                               >
-                                <X className="h-3 w-3 mr-1" />
+                                <X className="h-4 w-4 mr-2" />
                                 Cancelar
                               </Button>
                             </div>
@@ -797,54 +807,54 @@ export function IOSFieldView() {
                             <div className="flex-1 min-w-0">
                               <div className={cn(
                                 "font-medium truncate",
-                                isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-sm" : "text-base"
                               )}>
                                 {action.actionName || (action.type === 'possession' ? 'Posse de Bola' : 'Ação')}
                               </div>
                               <div className={cn(
                                 "text-muted-foreground mt-1",
-                                isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-sm" : "text-base"
                               )}>
                                 {team.name} • {formatTime(action.timestamp)}
                               </div>
                               {playerInfo && (
                                 <div className={cn(
                                   "text-primary mt-1 flex items-center",
-                                  isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-sm" : "text-base"
                                 )}>
-                                  <User className="h-3 w-3 mr-1" />
+                                  <User className="h-4 w-4 mr-2" />
                                   {playerInfo}
                                 </div>
                               )}
                             </div>
                             <div className={cn(
                               "flex flex-col ml-2",
-                              isLandscape ? "space-y-0.5" : "space-y-1"
+                              isLandscape ? "space-y-1" : "space-y-2"
                             )}>
                               <Button
                                 variant="ghost"
-                                size="icon"
+                                size="lg"
                                 onClick={() => handleEditAction(action)}
                                 className={cn(
                                   "text-muted-foreground hover:text-foreground",
-                                  isLandscape ? "h-5 w-5" : "h-6 w-6"
+                                  isLandscape ? "h-8 w-8" : "h-10 w-10"
                                 )}
                               >
-                                <Edit className="h-3 w-3" />
+                                <Edit className="h-4 w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
-                                size="icon"
+                                size="lg"
                                 onClick={() => {
                                   removeAction(action.id)
                                   showNotification('Ação removida', 'success')
                                 }}
                                 className={cn(
                                   "text-muted-foreground hover:text-destructive",
-                                  isLandscape ? "h-5 w-5" : "h-6 w-6"
+                                  isLandscape ? "h-8 w-8" : "h-10 w-10"
                                 )}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
@@ -854,11 +864,11 @@ export function IOSFieldView() {
                   })}
                 
                 {currentMatch.actions.length === 0 && (
-                  <div className="text-center py-8">
-                    <History className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
+                  <div className="text-center py-12">
+                    <History className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className={cn(
                       "text-muted-foreground",
-                      isLandscape ? "text-xs" : "text-xs"
+                      isLandscape ? "text-sm" : "text-base"
                     )}>
                     Nenhuma ação registrada ainda
                     </p>
@@ -873,7 +883,7 @@ export function IOSFieldView() {
       {/* Overlay para fechar painel */}
       {showSidebar && (
         <div 
-          className="fixed inset-0 bg-black/20 z-20"
+          className="fixed inset-0 bg-black/30 z-20"
           onClick={() => {
             setShowSidebar(false)
             setActivePanel(null)
