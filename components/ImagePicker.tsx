@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import * as ImagePickerExpo from 'expo-image-picker';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { Upload } from 'lucide-react-native';
 
 interface ImagePickerProps {
@@ -10,80 +9,21 @@ interface ImagePickerProps {
 }
 
 export default function ImagePicker({ imageUri, onImageSelected, label }: ImagePickerProps) {
-  const pickImage = async () => {
-    try {
-      // Solicitar permissão
-      const { status } = await ImagePickerExpo.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos.');
-        return;
-      }
-
-      const result = await ImagePickerExpo.launchImageLibraryAsync({
-        mediaTypes: ImagePickerExpo.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        onImageSelected(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.log('Error picking image:', error);
-      Alert.alert('Erro', 'Não foi possível acessar a galeria de fotos.');
-    }
-  };
-
-  const takePhoto = async () => {
-    try {
-      const { status } = await ImagePickerExpo.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissão necessária', 'Precisamos de permissão para usar a câmera.');
-        return;
-      }
-
-      const result = await ImagePickerExpo.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        onImageSelected(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.log('Error taking photo:', error);
-      Alert.alert('Erro', 'Não foi possível acessar a câmera.');
-    }
-  };
-
-  const showOptions = () => {
-    Alert.alert(
-      'Selecionar Logo',
-      'Escolha uma opção:',
-      [
-        { text: 'Galeria', onPress: pickImage },
-        { text: 'Câmera', onPress: takePhoto },
-        { text: 'Cancelar', style: 'cancel' }
-      ]
-    );
-  };
-
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       
-      <TouchableOpacity style={styles.imageButton} onPress={showOptions}>
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} />
-        ) : (
-          <View style={styles.placeholder}>
-            <Upload color="#666" size={32} />
-            <Text style={styles.placeholderText}>Adicionar Logo</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="URL da imagem (opcional)"
+        value={imageUri || ''}
+        onChangeText={onImageSelected}
+      />
+      
+      <View style={styles.note}>
+        <Upload color="#666" size={16} />
+        <Text style={styles.noteText}>Cole a URL de uma imagem online</Text>
+      </View>
     </View>
   );
 }
@@ -98,30 +38,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#333',
   },
-  imageButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2,
+  input: {
+    borderWidth: 1,
     borderColor: '#ddd',
-    borderStyle: 'dashed',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  note: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f8f9fa',
   },
-  image: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-  },
-  placeholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderText: {
+  noteText: {
     fontSize: 12,
     color: '#666',
-    marginTop: 4,
-    textAlign: 'center',
+    marginLeft: 4,
   },
 });
