@@ -22,6 +22,19 @@ export function IOSFieldView() {
   const [timer, setTimer] = useState(0)
   const [lastClickTime, setLastClickTime] = useState(0)
 
+  // Sincronizar estado fullscreen com o navegador
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
     
@@ -75,8 +88,7 @@ export function IOSFieldView() {
   }
 
   const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen)
-    if (!isFullscreen) {
+    if (!document.fullscreenElement) {
       // Entrar em tela cheia
       document.documentElement.requestFullscreen?.()
     } else {
