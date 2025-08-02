@@ -7,6 +7,7 @@ export interface Player {
   name: string;
   number: number;
   position: string;
+  role: string;
 }
 
 export interface Team {
@@ -88,7 +89,7 @@ interface FutebolStore {
   
   // Player management
   addPlayer: (teamId: string, player: Omit<Player, 'id'>) => void;
-  addMultiplePlayers: (teamId: string, playersText: string) => void;
+  addMultiplePlayers: (teamId: string, players: Array<{number: number, name: string, position: string, role: string}>) => void;
   updatePlayer: (teamId: string, playerId: string, player: Partial<Player>) => void;
   deletePlayer: (teamId: string, playerId: string) => void;
   
@@ -144,30 +145,19 @@ export const useFutebolStore = create<FutebolStore>()(
         )
       })),
 
-      addMultiplePlayers: (teamId, playersText) => {
-        const playerLines = playersText.split('\n').filter(line => line.trim());
-        const players: Player[] = [];
-        
-        playerLines.forEach(line => {
-          const parts = line.split(',').map(part => part.trim());
-          if (parts.length >= 3) {
-            const name = parts[0];
-            const number = parseInt(parts[1]) || 0;
-            const position = parts[2];
-            
-            players.push({
-              id: `${Date.now()}-${Math.random()}`,
-              name,
-              number,
-              position
-            });
-          }
-        });
+      addMultiplePlayers: (teamId, players) => {
+        const newPlayers: Player[] = players.map(player => ({
+          id: `${Date.now()}-${Math.random()}`,
+          name: player.name,
+          number: player.number,
+          position: player.position,
+          role: player.role
+        }));
 
         set((state) => ({
           teams: state.teams.map(team =>
             team.id === teamId
-              ? { ...team, players: [...team.players, ...players] }
+              ? { ...team, players: [...team.players, ...newPlayers] }
               : team
           )
         }));

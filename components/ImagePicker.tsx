@@ -23,33 +23,41 @@ export default function ImagePicker({ imageUri, onImageSelected, label }: ImageP
     const hasPermission = await requestPermission();
     if (!hasPermission) return;
 
-    const result = await ImagePickerExpo.launchImageLibraryAsync({
-      mediaTypes: ImagePickerExpo.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    try {
+      const result = await ImagePickerExpo.launchImageLibraryAsync({
+        mediaTypes: ImagePickerExpo.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      onImageSelected(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        onImageSelected(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log('Error picking image:', error);
     }
   };
 
   const takePhoto = async () => {
-    const { status } = await ImagePickerExpo.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos de permissão para usar a câmera.');
-      return;
-    }
+    try {
+      const { status } = await ImagePickerExpo.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos de permissão para usar a câmera.');
+        return;
+      }
 
-    const result = await ImagePickerExpo.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+      const result = await ImagePickerExpo.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      onImageSelected(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]) {
+        onImageSelected(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log('Error taking photo:', error);
     }
   };
 

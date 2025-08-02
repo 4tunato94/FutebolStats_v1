@@ -24,10 +24,22 @@ export default function TeamsScreen() {
   const [playerForm, setPlayerForm] = useState({
     name: '',
     number: '',
-    position: ''
+    position: '',
+    role: ''
   });
 
-  const [bulkPlayersText, setBulkPlayersText] = useState('');
+  const [bulkPlayers, setBulkPlayers] = useState([
+    { number: '', name: '', position: '', role: '' }
+  ]);
+
+  const POSITIONS = [
+    'Goleiro', 'Zagueiro', 'Lateral Direito', 'Lateral Esquerdo', 
+    'Volante', 'Meio-campo', 'Meia', 'Atacante', 'Centroavante', 'Ponta'
+  ];
+
+  const ROLES = [
+    'Titular', 'Reserva', 'Capitão', 'Vice-capitão', 'Técnico', 'Preparador'
+  ];
 
   const resetTeamForm = () => {
     setTeamForm({
@@ -42,7 +54,8 @@ export default function TeamsScreen() {
     setPlayerForm({
       name: '',
       number: '',
-      position: ''
+      position: '',
+      role: ''
     });
   };
 
@@ -86,7 +99,7 @@ export default function TeamsScreen() {
   };
 
   const handleAddPlayer = (teamId: string) => {
-    if (!playerForm.name.trim() || !playerForm.number.trim() || !playerForm.position.trim()) {
+    if (!playerForm.name.trim() || !playerForm.number.trim() || !playerForm.position.trim() || !playerForm.role.trim()) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios');
       return;
     }
@@ -107,7 +120,8 @@ export default function TeamsScreen() {
     addPlayer(teamId, {
       name: playerForm.name,
       number,
-      position: playerForm.position
+      position: playerForm.position,
+      role: playerForm.role
     });
 
     resetPlayerForm();
@@ -115,18 +129,29 @@ export default function TeamsScreen() {
   };
 
   const handleBulkAddPlayers = (teamId: string) => {
-    if (!bulkPlayersText.trim()) {
-      Alert.alert('Erro', 'Digite os jogadores no formato correto');
+    const validPlayers = bulkPlayers.filter(p => 
+      p.name.trim() && p.number.trim() && p.position.trim() && p.role.trim()
+    );
+    
+    if (validPlayers.length === 0) {
+      Alert.alert('Erro', 'Preencha pelo menos um jogador completo');
       return;
     }
 
-    addMultiplePlayers(teamId, bulkPlayersText);
-    setBulkPlayersText('');
+    const playersToAdd = validPlayers.map(p => ({
+      number: parseInt(p.number),
+      name: p.name,
+      position: p.position,
+      role: p.role
+    }));
+
+    addMultiplePlayers(teamId, playersToAdd);
+    setBulkPlayers([{ number: '', name: '', position: '', role: '' }]);
     setShowBulkAdd(null);
   };
 
   const handleEditPlayer = () => {
-    if (!editingPlayer || !playerForm.name.trim() || !playerForm.number.trim() || !playerForm.position.trim()) {
+    if (!editingPlayer || !playerForm.name.trim() || !playerForm.number.trim() || !playerForm.position.trim() || !playerForm.role.trim()) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios');
       return;
     }
@@ -147,7 +172,8 @@ export default function TeamsScreen() {
     updatePlayer(editingPlayer.teamId, editingPlayer.player.id, {
       name: playerForm.name,
       number,
-      position: playerForm.position
+      position: playerForm.position,
+      role: playerForm.role
     });
 
     setEditingPlayer(null);
@@ -169,7 +195,8 @@ export default function TeamsScreen() {
     setPlayerForm({
       name: player.name,
       number: player.number.toString(),
-      position: player.position
+      position: player.position,
+      role: player.role
     });
   };
 
@@ -253,7 +280,7 @@ export default function TeamsScreen() {
                       <Text style={styles.playerNumber}>#{player.number}</Text>
                       <View>
                         <Text style={styles.playerName}>{player.name}</Text>
-                        <Text style={styles.playerPosition}>{player.position}</Text>
+                        <Text style={styles.playerPosition}>{player.position} - {player.role}</Text>
                       </View>
                     </View>
                     <View style={styles.playerCardActions}>
@@ -382,6 +409,36 @@ export default function TeamsScreen() {
               onChangeText={(text) => setPlayerForm({ ...playerForm, position: text })}
             />
 
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
+              {POSITIONS.map(pos => (
+                <TouchableOpacity
+                  key={pos}
+                  style={styles.quickSelectButton}
+                  onPress={() => setPlayerForm({ ...playerForm, position: pos })}
+                >
+                  <Text style={styles.quickSelectText}>{pos}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Função"
+              value={playerForm.role}
+              onChangeText={(text) => setPlayerForm({ ...playerForm, role: text })}
+            />
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickSelect}>
+              {ROLES.map(role => (
+                <TouchableOpacity
+                  key={role}
+                  style={styles.quickSelectButton}
+                  onPress={() => setPlayerForm({ ...playerForm, role: role })}
+                >
+                  <Text style={styles.quickSelectText}>{role}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -412,32 +469,67 @@ export default function TeamsScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Adicionar Múltiplos Jogadores</Text>
             
-            <Text style={styles.instructionText}>
-              Digite um jogador por linha no formato:
-              {'\n'}Nome, Número, Posição
-              {'\n\n'}Exemplo:
-              {'\n'}João Silva, 10, Atacante
-              {'\n'}Pedro Santos, 9, Meio-campo
-              {'\n'}Carlos Oliveira, 1, Goleiro
-              {'\n'}Ana Costa, 7, Lateral
-            </Text>
-            
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="João Silva, 10, Atacante&#10;Pedro Santos, 9, Meio-campo&#10;Carlos Oliveira, 1, Goleiro"
-              value={bulkPlayersText}
-              onChangeText={setBulkPlayersText}
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
-            />
+            <ScrollView style={styles.bulkAddScroll}>
+              {bulkPlayers.map((player, index) => (
+                <View key={index} style={styles.bulkPlayerRow}>
+                  <TextInput
+                    style={[styles.input, styles.bulkInput]}
+                    placeholder="Nº"
+                    value={player.number}
+                    onChangeText={(text) => {
+                      const newPlayers = [...bulkPlayers];
+                      newPlayers[index].number = text;
+                      setBulkPlayers(newPlayers);
+                    }}
+                    keyboardType="numeric"
+                  />
+                  <TextInput
+                    style={[styles.input, styles.bulkInput, { flex: 2 }]}
+                    placeholder="Nome"
+                    value={player.name}
+                    onChangeText={(text) => {
+                      const newPlayers = [...bulkPlayers];
+                      newPlayers[index].name = text;
+                      setBulkPlayers(newPlayers);
+                    }}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.bulkInput]}
+                    placeholder="Posição"
+                    value={player.position}
+                    onChangeText={(text) => {
+                      const newPlayers = [...bulkPlayers];
+                      newPlayers[index].position = text;
+                      setBulkPlayers(newPlayers);
+                    }}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.bulkInput]}
+                    placeholder="Função"
+                    value={player.role}
+                    onChangeText={(text) => {
+                      const newPlayers = [...bulkPlayers];
+                      newPlayers[index].role = text;
+                      setBulkPlayers(newPlayers);
+                    }}
+                  />
+                </View>
+              ))}
+              
+              <TouchableOpacity
+                style={styles.addRowButton}
+                onPress={() => setBulkPlayers([...bulkPlayers, { number: '', name: '', position: '', role: '' }])}
+              >
+                <Text style={styles.addRowText}>+ Adicionar Linha</Text>
+              </TouchableOpacity>
+            </ScrollView>
 
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => {
                   setShowBulkAdd(null);
-                  setBulkPlayersText('');
+                  setBulkPlayers([{ number: '', name: '', position: '', role: '' }]);
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancelar</Text>
@@ -658,6 +750,44 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     textAlignVertical: 'top',
+  },
+  quickSelect: {
+    marginBottom: 16,
+  },
+  quickSelectButton: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
+  quickSelectText: {
+    fontSize: 12,
+    color: '#333',
+  },
+  bulkAddScroll: {
+    maxHeight: 300,
+    marginBottom: 16,
+  },
+  bulkPlayerRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  bulkInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  addRowButton: {
+    backgroundColor: '#e3f2fd',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  addRowText: {
+    color: '#1976d2',
+    fontWeight: '600',
   },
   instructionText: {
     fontSize: 14,
