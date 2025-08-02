@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react'
-import { Settings, Home, History, Zap, Users, BarChart3, Smartphone } from 'lucide-react'
+import { Settings, Home, History, Zap, Users, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFutebolStore } from '@/stores/futebolStore'
 import { TeamManager } from '@/components/TeamManager'
@@ -17,51 +17,12 @@ const Index = () => {
   const { appState, currentMatch, endMatch, setAppState } = useFutebolStore()
   const [activeTab, setActiveTab] = useState('setup')
   const [isMobile, setIsMobile] = useState(false)
-  const [showDevicePreview, setShowDevicePreview] = useState(false)
   
   // Detectar dispositivo móvel
   useEffect(() => {
     const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     setIsMobile(checkMobile)
   }, [])
-
-  const toggleDevicePreview = () => {
-    setShowDevicePreview(!showDevicePreview)
-    
-    if (!showDevicePreview) {
-      // Aplicar estilos de device preview
-      document.body.style.cssText = `
-        margin: 0;
-        padding: 20px;
-        background: #f0f0f0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-      `
-      
-      const root = document.getElementById('root')
-      if (root) {
-        root.style.cssText = `
-          width: 375px;
-          height: 812px;
-          border: 8px solid #333;
-          border-radius: 25px;
-          overflow: hidden;
-          box-shadow: 0 0 20px rgba(0,0,0,0.3);
-          background: white;
-          position: relative;
-        `
-      }
-    } else {
-      // Remover estilos de device preview
-      document.body.style.cssText = ''
-      const root = document.getElementById('root')
-      if (root) {
-        root.style.cssText = ''
-      }
-    }
-  }
   if (appState === 'playing' && currentMatch) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -84,20 +45,7 @@ const Index = () => {
       <IOSHeader
         title="⚽ FutebolStats"
         subtitle="Análise Tática em Tempo Real"
-        onMore={toggleDevicePreview}
       />
-      
-      {/* Botão flutuante de device preview */}
-      <div className="fixed top-4 right-4 z-50">
-        <Button
-          variant={showDevicePreview ? "default" : "outline"}
-          size="icon"
-          onClick={toggleDevicePreview}
-          className="rounded-full shadow-lg"
-        >
-          <Smartphone className="h-4 w-4" />
-        </Button>
-      </div>
       
       <div className="flex-1 overflow-y-auto pb-20">
         <div className="p-4 space-y-4">

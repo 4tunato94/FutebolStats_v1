@@ -7,7 +7,6 @@ interface IOSHeaderProps {
   subtitle?: string
   onBack?: () => void
   onSettings?: () => void
-  onMore?: () => void
   className?: string
 }
 
@@ -16,7 +15,6 @@ export function IOSHeader({
   subtitle, 
   onBack, 
   onSettings, 
-  onMore, 
   className 
 }: IOSHeaderProps) {
   return (
@@ -53,17 +51,6 @@ export function IOSHeader({
               className="h-10 w-10 rounded-full touch-target"
             >
               <Settings className="h-4 w-4" />
-            </Button>
-          )}
-          {onMore && (
-            <Button
-             variant="outline"
-              size="icon"
-              onClick={onMore}
-             className="h-10 w-10 rounded-full touch-target border-2 bg-background/50 hover:bg-accent"
-              title="Device Preview"
-            >
-              <MoreHorizontal className="h-4 w-4" />
             </Button>
           )}
         </div>
