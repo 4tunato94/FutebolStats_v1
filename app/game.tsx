@@ -4,8 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, Play, Pause, Square, Clock } from 'lucide-react-native';
 import { useFutebolStore } from '../stores/futebolStore';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import * as ScreenOrientation from 'expo-screen-orientation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,16 +12,6 @@ export default function GameScreen() {
   const [gameTime, setGameTime] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Force landscape orientation
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    
-    return () => {
-      // Unlock orientation when leaving
-      ScreenOrientation.unlockAsync();
-    };
-  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -63,7 +51,6 @@ export default function GameScreen() {
   };
 
   const handleZonePress = (zone: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedZone(zone);
   };
 
@@ -93,7 +80,6 @@ export default function GameScreen() {
       minute
     });
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSelectedZone(null);
   };
 

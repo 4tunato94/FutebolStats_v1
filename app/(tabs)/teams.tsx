@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, CreditCard as Edit, Trash2, Users } from 'lucide-react-native';
+import { Plus, Edit, Trash2, Users } from 'lucide-react-native';
 import { useFutebolStore, Team, Player } from '../../stores/futebolStore';
 
 export default function TeamsScreen() {

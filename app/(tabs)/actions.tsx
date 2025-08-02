@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Zap, Target, Users, Clock } from 'lucide-react-native';
 import { useFutebolStore } from '../../stores/futebolStore';
-import * as Haptics from 'expo-haptics';
 
 const ACTION_TYPES = [
   { id: 'goal', name: 'Gol', icon: '⚽', color: '#4CAF50' },
@@ -28,23 +27,19 @@ export default function ActionsScreen() {
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
   const handleActionPress = (actionId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedAction(actionId);
   };
 
   const handleTeamPress = (teamId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedTeam(teamId);
     setSelectedPlayer(null); // Reset player selection
   };
 
   const handlePlayerPress = (playerId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedPlayer(playerId);
   };
 
   const handleZonePress = (zone: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedZone(zone);
   };
 
@@ -79,8 +74,6 @@ export default function ActionsScreen() {
       zone: selectedZone,
       minute
     });
-
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
     // Reset selections
     setSelectedAction(null);
