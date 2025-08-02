@@ -21,7 +21,8 @@
     "react-native-screens": "~4.1.0",
     "zustand": "^4.4.7",
     "react-native-svg": "15.8.0",
-    "lucide-react-native": "^0.447.0"
+    "lucide-react-native": "^0.447.0",
+    "react-native-web": "~0.19.10"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
