@@ -91,6 +91,81 @@ export default function ActionsScreen() {
     return team.players;
   };
 
+  if (!currentMatch) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Ações do Jogo</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => setShowAddActionType(true)}
+          >
+            <Plus color="white" size={24} />
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView style={styles.content}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Tipos de Ação Disponíveis</Text>
+            <View style={styles.actionTypesGrid}>
+              {actionTypes.map(actionType => (
+                <View key={actionType.id} style={styles.actionTypeCard}>
+                  <View style={styles.actionTypeHeader}>
+                    <View style={[styles.actionTypeIcon, { backgroundColor: actionType.color }]}>
+                      <Text style={styles.actionTypeEmoji}>{actionType.icon}</Text>
+                    </View>
+                    <Text style={styles.actionTypeName}>{actionType.name}</Text>
+                    <View style={styles.actionTypeActions}>
+                      <TouchableOpacity
+                        onPress={() => startEditActionType(actionType)}
+                        style={styles.actionTypeButton}
+                      >
+                        <Edit color="#666" size={16} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          Alert.alert(
+                            'Confirmar',
+                            `Deseja excluir a ação "${actionType.name}"?`,
+                            [
+                              { text: 'Cancelar', style: 'cancel' },
+                              { text: 'Excluir', style: 'destructive', onPress: () => deleteActionType(actionType.id) }
+                            ]
+                          );
+                        }}
+                        style={styles.actionTypeButton}
+                      >
+                        <Trash2 color="#ff4444" size={16} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <Text style={styles.actionTypeCategory}>Categoria: {actionType.category}</Text>
+                  <View style={styles.actionTypeOptions}>
+                    {actionType.changePossessionAutomatically && (
+                      <Text style={styles.actionTypeOption}>• Muda posse automaticamente</Text>
+                    )}
+                    {actionType.requiresPlayerSelection && (
+                      <Text style={styles.actionTypeOption}>• Requer seleção de jogador</Text>
+                    )}
+                    {actionType.reverseAction && (
+                      <Text style={styles.actionTypeOption}>• Ação reversa</Text>
+                    )}
+                    {actionType.multiplePlayersAction && (
+                      <Text style={styles.actionTypeOption}>• Ação de múltiplos jogadores</Text>
+                    )}
+                    {actionType.teamChangeAction && (
+                      <Text style={styles.actionTypeOption}>• Mudança no time</Text>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>

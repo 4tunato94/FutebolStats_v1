@@ -462,7 +462,7 @@ export default function TeamsScreen() {
                 if (text && !roles.includes(text)) {
                   addRole(text);
                 }
-              ))}
+              }}
             />
 
             <View style={styles.quickSelectContainer}>
@@ -486,9 +486,6 @@ export default function TeamsScreen() {
               </ScrollView>
             </View>
 
-            <View style={styles.modalActions}>
-              ))}
-            </ScrollView>
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -754,6 +751,9 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     maxHeight: '80%',
   },
+  bulkModalContent: {
+    maxHeight: '90%',
+  },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -773,10 +773,10 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: 'top',
   },
-  quickSelect: {
+  quickSelectContainer: {
     marginBottom: 16,
   },
-  quickSelectContainer: {
+  quickSelect: {
     marginBottom: 16,
   },
   quickSelectItem: {
@@ -789,6 +789,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
+    marginRight: 4,
   },
   quickSelectText: {
     fontSize: 12,
@@ -799,17 +800,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: 20,
     height: 20,
-    alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 4,
+    alignItems: 'center',
   },
   removeButtonText: {
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
   },
-  bulkModalContent: {
-    maxHeight: '90%',
+  bulkAddScroll: {
+    maxHeight: 300,
+    marginBottom: 16,
   },
   bulkPlayerRow: {
     flexDirection: 'row',
@@ -821,17 +822,15 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   bulkTextArea: {
-    height: 300,
+    height: 200,
     textAlignVertical: 'top',
     fontFamily: 'monospace',
-    flex: 1,
   },
   instructionText: {
     fontSize: 14,
     color: '#666',
     marginBottom: 16,
     lineHeight: 20,
-    textAlign: 'center',
   },
   modalActions: {
     flexDirection: 'row',
