@@ -59,10 +59,48 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Capacitor (for iOS app)
 
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/f6aaf55d-9294-4117-b80f-1822d6d5b17c) and click on Share -> Publish.
+
+## How to build iOS app?
+
+To build and run the iOS app:
+
+1. **Build the web app:**
+   ```sh
+   npm run build
+   ```
+
+2. **Add iOS platform and sync:**
+   ```sh
+   npm run ios:build
+   ```
+
+3. **Open in Xcode:**
+   ```sh
+   npm run ios:open
+   ```
+
+4. **Or run directly:**
+   ```sh
+   npm run ios:run
+   ```
+
+### Requirements for iOS development:
+- macOS with Xcode installed
+- iOS Simulator or physical iOS device
+- Apple Developer account (for device testing/App Store)
+
+### App Features:
+- **Native iOS integration** with Capacitor
+- **Haptic feedback** for better user experience
+- **Forced landscape orientation** for optimal field view
+- **Native status bar** styling
+- **Splash screen** with app branding
+- **Hardware back button** support
 
 ## Can I connect a custom domain to my Lovable project?
 

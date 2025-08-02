@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useCapacitor } from '@/hooks/useCapacitor'
+import { ImpactStyle } from '@capacitor/haptics'
 import { 
   Maximize2, 
   Minimize2, 
@@ -30,6 +32,7 @@ interface Notification {
 
 export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession, removeAction, actionTypes } = useFutebolStore()
+  const { isNative, isReady, hapticFeedback, lockOrientation } = useCapacitor()
   const [isFullscreen, setIsFullscreen] = useState(true)
   const [showSidebar, setShowSidebar] = useState(false)
   const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
@@ -46,12 +49,18 @@ export function IOSFieldView() {
   }>({})
 
   // Detectar dispositivo móvel
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  const isMobile = isNative || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
 
   // Forçar fullscreen e paisagem no mobile
   useEffect(() => {
-    if (!isMobile) return
+    if (!isMobile || !isReady) return
+
+    // Se for app nativo, usar APIs do Capacitor
+    if (isNative) {
+      lockOrientation('LANDSCAPE')
+      return
+    }
 
     const setupMobileFullscreen = () => {
       // Configurar viewport
@@ -294,11 +303,13 @@ export function IOSFieldView() {
 
   const handlePossessionSelect = (teamId: string) => {
     setPossession(teamId)
+    hapticFeedback(ImpactStyle.Light)
   }
 
   const handleActionComplete = () => {
     setActivePanel(null)
     setShowSidebar(false)
+    hapticFeedback(ImpactStyle.Medium)
   }
 
   const openPanel = (panel: 'actions' | 'history') => {
@@ -333,6 +344,7 @@ export function IOSFieldView() {
   }
 
   const togglePossession = () => {
+    hapticFeedback(ImpactStyle.Light)
     if (!currentMatch.currentPossession) {
       // Se nenhum time está selecionado, selecionar o time A
       setPossession(currentMatch.teamA.id)

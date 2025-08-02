@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useFutebolStore } from '@/stores/futebolStore'
 import { Button } from '@/components/ui/button'
+import { useCapacitor } from '@/hooks/useCapacitor'
+import { ImpactStyle } from '@capacitor/haptics'
 import { cn } from '@/lib/utils'
 
 interface FieldGridProps {
@@ -10,6 +12,7 @@ interface FieldGridProps {
 
 export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
   const { currentMatch, addAction } = useFutebolStore()
+  const { hapticFeedback } = useCapacitor()
   const [markedZones, setMarkedZones] = useState<Set<string>>(new Set())
   const [lastPossession, setLastPossession] = useState<string | null>(null)
 
@@ -50,6 +53,8 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
   }, [currentMatch.currentPossession, lastPossession])
   
   const handleZoneClick = (row: number, col: number) => {
+    hapticFeedback(ImpactStyle.Light)
+    
     if (!currentMatch.currentPossession) {
       // Usar evento customizado para notificação
       window.dispatchEvent(new CustomEvent('showNotification', {

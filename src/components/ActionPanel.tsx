@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { useFutebolStore } from '@/stores/futebolStore'
 import { ActionType } from '@/types/futebol'
 import { PlayerSelector } from './PlayerSelector'
+import { useCapacitor } from '@/hooks/useCapacitor'
+import { ImpactStyle } from '@capacitor/haptics'
 import { cn } from '@/lib/utils'
 
 interface ActionPanelProps {
@@ -12,11 +14,14 @@ interface ActionPanelProps {
 
 export function ActionPanel({ onClose }: ActionPanelProps) {
   const { currentMatch, actionTypes, addAction } = useFutebolStore()
+  const { hapticFeedback } = useCapacitor()
   const [selectedAction, setSelectedAction] = useState<ActionType | null>(null)
 
   if (!currentMatch) return null
 
   const handleActionClick = (actionType: ActionType) => {
+    hapticFeedback(ImpactStyle.Medium)
+    
     if (!currentMatch.currentPossession) {
       // Usar evento customizado para notificação
       window.dispatchEvent(new CustomEvent('showNotification', {
