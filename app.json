@@ -21,7 +21,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#2d5016"
-      }
+      },
+      "package": "com.futebolstats.mobile"
     },
     "web": {
       "favicon": "./assets/icon.png",
