@@ -3,7 +3,7 @@
     "name": "FutebolStats",
     "slug": "futebol-stats-mobile",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
@@ -15,10 +15,9 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.futebolstats.mobile"
-    },
-    "android": {
-      "package": "com.futebolstats.mobile"
+      "bundleIdentifier": "com.futebolstats.mobile",
+      "requireFullScreen": false,
+      "statusBarStyle": "light"
     },
     "web": {
       "favicon": "./assets/favicon.png",
