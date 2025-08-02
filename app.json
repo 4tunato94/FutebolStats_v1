@@ -7,32 +7,26 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "resizeMode": "contain",
       "backgroundColor": "#2d5016"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.futebolstats.mobile"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#2d5016"
-      },
-      "package": "com.futebolstats.mobile"
+      }
     },
     "web": {
-      "favicon": "./assets/icon.png",
-      "output": "static",
-      "bundler": "metro"
+      "favicon": "./assets/icon.png"
     },
     "plugins": [
       "expo-router"
     ],
-    "scheme": "futebol-stats",
-    "newArchEnabled": false
+    "scheme": "futebol-stats"
   }
 }

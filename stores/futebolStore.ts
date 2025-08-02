@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface Player {
   id: string;
@@ -67,30 +65,9 @@ const DEFAULT_ACTION_TYPES: ActionType[] = [
   { id: 'shot_off_target', name: 'Chute Fora', icon: '📤', color: '#FF5722', category: 'offensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
   { id: 'pass_completed', name: 'Passe Certo', icon: '✅', color: '#8BC34A', category: 'neutral', requiresPlayerSelection: true },
   { id: 'pass_failed', name: 'Passe Errado', icon: '❌', color: '#F44336', category: 'neutral', changePossessionAutomatically: true, requiresPlayerSelection: true },
-  { id: 'cross', name: 'Cruzamento', icon: '↗️', color: '#9C27B0', category: 'offensive', requiresPlayerSelection: true },
-  { id: 'corner', name: 'Escanteio', icon: '📐', color: '#607D8B', category: 'neutral' },
-  { id: 'free_kick', name: 'Tiro Livre', icon: '🦶', color: '#795548', category: 'neutral', requiresPlayerSelection: true },
-  { id: 'penalty', name: 'Pênalti', icon: '🎯', color: '#E91E63', category: 'offensive', requiresPlayerSelection: true },
   { id: 'foul', name: 'Falta', icon: '⚠️', color: '#F44336', category: 'defensive', changePossessionAutomatically: true, reverseAction: true, requiresPlayerSelection: true },
   { id: 'card_yellow', name: 'Cartão Amarelo', icon: '🟨', color: '#FFEB3B', category: 'defensive', requiresPlayerSelection: true },
   { id: 'card_red', name: 'Cartão Vermelho', icon: '🟥', color: '#F44336', category: 'defensive', requiresPlayerSelection: true },
-  { id: 'substitution', name: 'Substituição', icon: '🔄', color: '#607D8B', category: 'neutral', multiplePlayersAction: true },
-  { id: 'offside', name: 'Impedimento', icon: '🚫', color: '#9E9E9E', category: 'defensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
-  { id: 'tackle', name: 'Desarme', icon: '🛡️', color: '#3F51B5', category: 'defensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
-  { id: 'interception', name: 'Interceptação', icon: '✋', color: '#009688', category: 'defensive', changePossessionAutomatically: true, requiresPlayerSelection: true },
-  { id: 'save', name: 'Defesa', icon: '🧤', color: '#00BCD4', category: 'defensive', requiresPlayerSelection: true },
-];
-
-const DEFAULT_POSITIONS = [
-  'Goleiro', 'Zagueiro', 'Lateral Esquerdo', 'Lateral Direito', 'Meio-campista', 'Atacante'
-];
-
-const DEFAULT_ROLES = [
-  'Goleiro Tradicional', 'Goleiro-Líbero', 'Zagueiro Central', 'Zagueiro Construtor', 'Líbero', 
-  'Lateral Defensivo', 'Lateral Apoiador', 'Lateral Construtor', 'Ala', 'Cabeça de Área', 
-  'Primeiro Volante', 'Segundo Volante', 'Meia Box-to-Box', 'Meia Armador', 'Meia Central', 
-  'Meia-atacante', 'Meia de Ligação', 'Ponta', 'Extremo', 'Ponta Invertido', 'Segundo Atacante', 
-  'Centroavante', 'Homem de Área', 'Pivô', 'Falso 9'
 ];
 
 interface FutebolStore {
@@ -106,7 +83,6 @@ interface FutebolStore {
   
   // Player management
   addPlayer: (teamId: string, player: Omit<Player, 'id'>) => void;
-  addMultiplePlayers: (teamId: string, players: Array<{number: number, name: string, position: string, role: string}>) => void;
   updatePlayer: (teamId: string, playerId: string, player: Partial<Player>) => void;
   deletePlayer: (teamId: string, playerId: string) => void;
   
@@ -123,212 +99,143 @@ interface FutebolStore {
   updateAction: (actionId: string, updates: Partial<GameAction>) => void;
   deleteAction: (actionId: string) => void;
   
-  // Action types management
-  addActionType: (actionType: Omit<ActionType, 'id'>) => void;
-  updateActionType: (id: string, actionType: Partial<ActionType>) => void;
-  deleteActionType: (id: string) => void;
-  
-  // Position and role management
-  positions: string[];
-  roles: string[];
-  addPosition: (position: string) => void;
-  removePosition: (position: string) => void;
-  addRole: (role: string) => void;
-  removeRole: (role: string) => void;
-  
   // App state
   setAppState: (state: 'menu' | 'playing') => void;
 }
 
-export const useFutebolStore = create<FutebolStore>()(
-  persist(
-    (set, get) => ({
-      teams: [],
-      currentMatch: null,
-      appState: 'menu',
-      actionTypes: DEFAULT_ACTION_TYPES,
+export const useFutebolStore = create<FutebolStore>((set, get) => ({
+  teams: [],
+  currentMatch: null,
+  appState: 'menu',
+  actionTypes: DEFAULT_ACTION_TYPES,
 
-      addTeam: (team) => set((state) => ({
-        teams: [...state.teams, { ...team, id: Date.now().toString() }]
-      })),
+  addTeam: (team) => set((state) => ({
+    teams: [...state.teams, { ...team, id: Date.now().toString() }]
+  })),
 
-      updateTeam: (id, updatedTeam) => set((state) => ({
-        teams: state.teams.map(team => 
-          team.id === id ? { ...team, ...updatedTeam } : team
-        )
-      })),
+  updateTeam: (id, updatedTeam) => set((state) => ({
+    teams: state.teams.map(team => 
+      team.id === id ? { ...team, ...updatedTeam } : team
+    )
+  })),
 
-      deleteTeam: (id) => set((state) => ({
-        teams: state.teams.filter(team => team.id !== id)
-      })),
+  deleteTeam: (id) => set((state) => ({
+    teams: state.teams.filter(team => team.id !== id)
+  })),
 
-      addPlayer: (teamId, player) => set((state) => ({
-        teams: state.teams.map(team =>
-          team.id === teamId
-            ? { ...team, players: [...team.players, { ...player, id: Date.now().toString() }] }
-            : team
-        )
-      })),
+  addPlayer: (teamId, player) => set((state) => ({
+    teams: state.teams.map(team =>
+      team.id === teamId
+        ? { ...team, players: [...team.players, { ...player, id: Date.now().toString() }] }
+        : team
+    )
+  })),
 
-      addMultiplePlayers: (teamId, players) => {
-        const newPlayers: Player[] = players.map(player => ({
-          id: `${Date.now()}-${Math.random()}`,
-          name: player.name,
-          number: player.number,
-          position: player.position,
-          role: player.role
-        }));
-
-        set((state) => ({
-          teams: state.teams.map(team =>
-            team.id === teamId
-              ? { ...team, players: [...team.players, ...newPlayers] }
-              : team
-          )
-        }));
-      },
-
-      updatePlayer: (teamId, playerId, updatedPlayer) => set((state) => ({
-        teams: state.teams.map(team =>
-          team.id === teamId
-            ? {
-                ...team,
-                players: team.players.map(player =>
-                  player.id === playerId ? { ...player, ...updatedPlayer } : player
-                )
-              }
-            : team
-        )
-      })),
-
-      deletePlayer: (teamId, playerId) => set((state) => ({
-        teams: state.teams.map(team =>
-          team.id === teamId
-            ? { ...team, players: team.players.filter(player => player.id !== playerId) }
-            : team
-        )
-      })),
-
-      startMatch: (teamAId, teamBId) => {
-        const { teams } = get();
-        const teamA = teams.find(t => t.id === teamAId);
-        const teamB = teams.find(t => t.id === teamBId);
-        
-        if (teamA && teamB) {
-          set({
-            currentMatch: {
-              id: Date.now().toString(),
-              teamA,
-              teamB,
-              startTime: new Date(),
-              actions: [],
-              isActive: true,
-              currentTime: 0,
-              isPaused: false,
-              possession: null
-            },
-            appState: 'playing'
-          });
-        }
-      },
-
-      endMatch: () => set({
-        currentMatch: null,
-        appState: 'menu'
-      }),
-
-      pauseMatch: () => set((state) => ({
-        currentMatch: state.currentMatch ? { ...state.currentMatch, isPaused: true } : null
-      })),
-
-      resumeMatch: () => set((state) => ({
-        currentMatch: state.currentMatch ? { ...state.currentMatch, isPaused: false } : null
-      })),
-
-      updateMatchTime: (time) => set((state) => ({
-        currentMatch: state.currentMatch ? { ...state.currentMatch, currentTime: time } : null
-      })),
-
-      setPossession: (team) => set((state) => ({
-        currentMatch: state.currentMatch ? { ...state.currentMatch, possession: team } : null
-      })),
-
-      addAction: (action) => set((state) => {
-        if (!state.currentMatch) return state;
-        
-        const newAction: GameAction = {
-          ...action,
-          id: Date.now().toString(),
-          timestamp: new Date()
-        };
-
-        return {
-          currentMatch: {
-            ...state.currentMatch,
-            actions: [...state.currentMatch.actions, newAction]
-          }
-        };
-      }),
-
-      updateAction: (actionId, updates) => set((state) => {
-        if (!state.currentMatch) return state;
-
-        return {
-          currentMatch: {
-            ...state.currentMatch,
-            actions: state.currentMatch.actions.map(action =>
-              action.id === actionId ? { ...action, ...updates } : action
+  updatePlayer: (teamId, playerId, updatedPlayer) => set((state) => ({
+    teams: state.teams.map(team =>
+      team.id === teamId
+        ? {
+            ...team,
+            players: team.players.map(player =>
+              player.id === playerId ? { ...player, ...updatedPlayer } : player
             )
           }
-        };
-      }),
+        : team
+    )
+  })),
 
-      deleteAction: (actionId) => set((state) => {
-        if (!state.currentMatch) return state;
+  deletePlayer: (teamId, playerId) => set((state) => ({
+    teams: state.teams.map(team =>
+      team.id === teamId
+        ? { ...team, players: team.players.filter(player => player.id !== playerId) }
+        : team
+    )
+  })),
 
-        return {
-          currentMatch: {
-            ...state.currentMatch,
-            actions: state.currentMatch.actions.filter(action => action.id !== actionId)
-          }
-        };
-      }),
-
-      addActionType: (actionType) => set((state) => ({
-        actionTypes: [...state.actionTypes, { ...actionType, id: Date.now().toString() }]
-      })),
-
-      updateActionType: (id, updatedActionType) => set((state) => ({
-        actionTypes: state.actionTypes.map(actionType =>
-          actionType.id === id ? { ...actionType, ...updatedActionType } : actionType
-        )
-      })),
-
-      deleteActionType: (id) => set((state) => ({
-        actionTypes: state.actionTypes.filter(actionType => actionType.id !== id)
-      })),
-
-      addPosition: (position) => set((state) => ({
-        positions: state.positions.includes(position) ? state.positions : [...state.positions, position]
-      })),
-
-      removePosition: (position) => set((state) => ({
-        positions: state.positions.filter(p => p !== position)
-      })),
-
-      addRole: (role) => set((state) => ({
-        roles: state.roles.includes(role) ? state.roles : [...state.roles, role]
-      })),
-
-      removeRole: (role) => set((state) => ({
-        roles: state.roles.filter(r => r !== role)
-      })),
-
-      setAppState: (appState) => set({ appState })
-    }),
-    {
-      name: 'futebol-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+  startMatch: (teamAId, teamBId) => {
+    const { teams } = get();
+    const teamA = teams.find(t => t.id === teamAId);
+    const teamB = teams.find(t => t.id === teamBId);
+    
+    if (teamA && teamB) {
+      set({
+        currentMatch: {
+          id: Date.now().toString(),
+          teamA,
+          teamB,
+          startTime: new Date(),
+          actions: [],
+          isActive: true,
+          currentTime: 0,
+          isPaused: false,
+          possession: null
+        },
+        appState: 'playing'
+      });
     }
-  )
-);
+  },
+
+  endMatch: () => set({
+    currentMatch: null,
+    appState: 'menu'
+  }),
+
+  pauseMatch: () => set((state) => ({
+    currentMatch: state.currentMatch ? { ...state.currentMatch, isPaused: true } : null
+  })),
+
+  resumeMatch: () => set((state) => ({
+    currentMatch: state.currentMatch ? { ...state.currentMatch, isPaused: false } : null
+  })),
+
+  updateMatchTime: (time) => set((state) => ({
+    currentMatch: state.currentMatch ? { ...state.currentMatch, currentTime: time } : null
+  })),
+
+  setPossession: (team) => set((state) => ({
+    currentMatch: state.currentMatch ? { ...state.currentMatch, possession: team } : null
+  })),
+
+  addAction: (action) => set((state) => {
+    if (!state.currentMatch) return state;
+    
+    const newAction: GameAction = {
+      ...action,
+      id: Date.now().toString(),
+      timestamp: new Date()
+    };
+
+    return {
+      currentMatch: {
+        ...state.currentMatch,
+        actions: [...state.currentMatch.actions, newAction]
+      }
+    };
+  }),
+
+  updateAction: (actionId, updates) => set((state) => {
+    if (!state.currentMatch) return state;
+
+    return {
+      currentMatch: {
+        ...state.currentMatch,
+        actions: state.currentMatch.actions.map(action =>
+          action.id === actionId ? { ...action, ...updates } : action
+        )
+      }
+    };
+  }),
+
+  deleteAction: (actionId) => set((state) => {
+    if (!state.currentMatch) return state;
+
+    return {
+      currentMatch: {
+        ...state.currentMatch,
+        actions: state.currentMatch.actions.filter(action => action.id !== actionId)
+      }
+    };
+  }),
+
+  setAppState: (appState) => set({ appState })
+}));
