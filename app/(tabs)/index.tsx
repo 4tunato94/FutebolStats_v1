@@ -74,10 +74,11 @@ export default function HomeScreen() {
                     onPress={() => setTeamAId(team.id)}
                   >
                     {team.logo ? (
-                      <Image source={{ uri: team.logo }} style={styles.teamLogo} />
+                      <Image source={{ uri: team.logo }} style={styles.teamColor} />
                     ) : (
                       <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
                     )}
+                    <Text style={styles.teamName}>{team.name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -96,10 +97,11 @@ export default function HomeScreen() {
                     onPress={() => setTeamBId(team.id)}
                   >
                     {team.logo ? (
-                      <Image source={{ uri: team.logo }} style={styles.teamLogo} />
+                      <Image source={{ uri: team.logo }} style={styles.teamColor} />
                     ) : (
                       <View style={[styles.teamColor, { backgroundColor: team.colors.primary }]} />
                     )}
+                    <Text style={styles.teamName}>{team.name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -205,8 +207,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginHorizontal: 4,
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -220,11 +222,13 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
+    marginBottom: 8,
   },
-  teamLogo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  teamName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
   },
   startButton: {
     backgroundColor: '#2d5016',

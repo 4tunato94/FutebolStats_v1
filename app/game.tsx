@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Play, Pause, Square, RotateCcw } from 'lucide-react-native';
+import { ArrowLeft, Play, Pause, RotateCcw, Menu, X } from 'lucide-react-native';
 import { useFutebolStore } from '../stores/futebolStore';
 import { router } from 'expo-router';
 import FieldView from '../components/FieldView';
+
+const { width, height } = Dimensions.get('window');
 
 export default function GameScreen() {
   const { 
     currentMatch, 
     endMatch, 
     addAction, 
-    pauseMatch, 
-    resumeMatch, 
     updateMatchTime,
     setPossession,
     actionTypes 
@@ -21,8 +21,10 @@ export default function GameScreen() {
   const [gameTime, setGameTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
-  const [showActions, setShowActions] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'actions' | 'history'>('actions');
+  const [clickCount, setClickCount] = useState(0);
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -46,26 +48,51 @@ export default function GameScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStartStop = () => {
-    setIsRunning(!isRunning);
+  const handleTimerClick = () => {
+    setClickCount(prev => prev + 1);
+    
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      if (clickCount === 0) {
+        // Single click - play/pause
+        setIsRunning(!isRunning);
+      } else if (clickCount === 1) {
+        // Double click - reset
+        Alert.alert(
+          'Resetar Cronômetro',
+          'Tem certeza que deseja resetar o cronômetro?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { 
+              text: 'Resetar', 
+              onPress: () => {
+                setGameTime(0);
+                setIsRunning(false);
+                updateMatchTime(0);
+              }
+            }
+          ]
+        );
+      }
+      setClickCount(0);
+    }, 300);
+    
+    setClickTimeout(timeout);
   };
 
-  const handleReset = () => {
-    Alert.alert(
-      'Resetar Cronômetro',
-      'Tem certeza que deseja resetar o cronômetro?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Resetar', 
-          onPress: () => {
-            setGameTime(0);
-            setIsRunning(false);
-            updateMatchTime(0);
-          }
-        }
-      ]
-    );
+  const handlePossessionToggle = () => {
+    if (!currentMatch) return;
+    
+    if (!currentMatch.possession) {
+      setPossession('teamA');
+    } else if (currentMatch.possession === 'teamA') {
+      setPossession('teamB');
+    } else {
+      setPossession(null);
+    }
   };
 
   const handleEndMatch = () => {
@@ -88,8 +115,8 @@ export default function GameScreen() {
 
   const handleZonePress = (zone: string) => {
     setSelectedZone(zone);
-    setShowActions(true);
-    setShowHistory(false);
+    setSidebarOpen(true);
+    setActiveTab('actions');
   };
 
   const handleActionPress = (actionTypeId: string, teamId: string) => {
@@ -119,8 +146,14 @@ export default function GameScreen() {
       second
     });
 
+    // Close sidebar after action
+    setSidebarOpen(false);
     setSelectedZone(null);
-    setShowActions(false);
+  };
+
+  const getCurrentPossessionTeam = () => {
+    if (!currentMatch || !currentMatch.possession) return null;
+    return currentMatch.possession === 'teamA' ? currentMatch.teamA : currentMatch.teamB;
   };
 
   if (!currentMatch) {
@@ -140,9 +173,12 @@ export default function GameScreen() {
       />
 
       {/* Cronômetro no topo centro */}
-      <View style={styles.timerContainer}>
+      <TouchableOpacity style={styles.timerContainer} onPress={handleTimerClick}>
         <Text style={styles.gameTimer}>{formatTime(gameTime)}</Text>
-      </View>
+        <Text style={styles.timerHint}>
+          {isRunning ? 'Pausar' : 'Iniciar'} • 2x Resetar
+        </Text>
+      </TouchableOpacity>
 
       {/* Controles laterais esquerdos */}
       <View style={styles.leftControls}>
@@ -150,80 +186,57 @@ export default function GameScreen() {
           <ArrowLeft color="white" size={24} />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.controlButton} onPress={handleStartStop}>
-          {isRunning ? <Pause color="white" size={24} /> : <Play color="white" size={24} />}
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.controlButton} onPress={handleReset}>
-          <RotateCcw color="white" size={24} />
-        </TouchableOpacity>
-
-        {/* Botões de posse - apenas logos */}
-        <TouchableOpacity
-          style={[
-            styles.possessionButton,
-            currentMatch.possession === 'teamA' && styles.activePossession
-          ]}
-          onPress={() => setPossession(currentMatch.possession === 'teamA' ? null : 'teamA')}
-        >
-          {currentMatch.teamA.logo ? (
-            <Image source={{ uri: currentMatch.teamA.logo }} style={styles.teamLogo} />
+        <TouchableOpacity style={styles.controlButton} onPress={handlePossessionToggle}>
+          {getCurrentPossessionTeam() ? (
+            getCurrentPossessionTeam()!.logo ? (
+              <Image source={{ uri: getCurrentPossessionTeam()!.logo }} style={styles.teamLogo} />
+            ) : (
+              <View style={[styles.teamColor, { backgroundColor: getCurrentPossessionTeam()!.colors.primary }]} />
+            )
           ) : (
-            <View style={[styles.teamColor, { backgroundColor: currentMatch.teamA.colors.primary }]} />
+            <View style={styles.noPossession}>
+              <Text style={styles.noPossessionText}>?</Text>
+            </View>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.possessionButton,
-            currentMatch.possession === 'teamB' && styles.activePossession
-          ]}
-          onPress={() => setPossession(currentMatch.possession === 'teamB' ? null : 'teamB')}
+        <TouchableOpacity 
+          style={[styles.controlButton, sidebarOpen && styles.activeControl]} 
+          onPress={() => setSidebarOpen(!sidebarOpen)}
         >
-          {currentMatch.teamB.logo ? (
-            <Image source={{ uri: currentMatch.teamB.logo }} style={styles.teamLogo} />
-          ) : (
-            <View style={[styles.teamColor, { backgroundColor: currentMatch.teamB.colors.primary }]} />
-          )}
+          {sidebarOpen ? <X color="white" size={24} /> : <Menu color="white" size={24} />}
         </TouchableOpacity>
       </View>
 
-      {/* Aba lateral direita */}
-      <View style={styles.rightPanel}>
-        <View style={styles.tabButtons}>
-          <TouchableOpacity
-            style={[styles.tabButton, showActions && styles.activeTab]}
-            onPress={() => {
-              setShowActions(!showActions);
-              setShowHistory(false);
-            }}
-          >
-            <Text style={styles.tabText}>Ações</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.tabButton, showHistory && styles.activeTab]}
-            onPress={() => {
-              setShowHistory(!showHistory);
-              setShowActions(false);
-            }}
-          >
-            <Text style={styles.tabText}>Histórico</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Sidebar lateral esquerda */}
+      {sidebarOpen && (
+        <View style={styles.sidebar}>
+          <View style={styles.sidebarHeader}>
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'actions' && styles.activeTab]}
+              onPress={() => setActiveTab('actions')}
+            >
+              <Text style={styles.tabText}>Ações</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === 'history' && styles.activeTab]}
+              onPress={() => setActiveTab('history')}
+            >
+              <Text style={styles.tabText}>Histórico</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Conteúdo da aba */}
-        {(showActions || showHistory) && (
-          <View style={styles.panelContent}>
-            {showActions && selectedZone && (
-              <ScrollView style={styles.actionsPanel}>
-                <Text style={styles.panelTitle}>Zona: {selectedZone}</Text>
+          <ScrollView style={styles.sidebarContent}>
+            {activeTab === 'actions' && selectedZone && (
+              <View>
+                <Text style={styles.sectionTitle}>Zona: {selectedZone}</Text>
                 
                 <Text style={styles.teamTitle}>{currentMatch.teamA.name}</Text>
                 <View style={styles.actionButtons}>
-                  {actionTypes.slice(0, 6).map(actionType => (
+                  {actionTypes.slice(0, 9).map(actionType => (
                     <TouchableOpacity
-                      key={actionType.id}
+                      key={`${actionType.id}-A`}
                       style={[styles.actionButton, { backgroundColor: actionType.color }]}
                       onPress={() => handleActionPress(actionType.id, currentMatch.teamA.id)}
                     >
@@ -235,9 +248,9 @@ export default function GameScreen() {
 
                 <Text style={styles.teamTitle}>{currentMatch.teamB.name}</Text>
                 <View style={styles.actionButtons}>
-                  {actionTypes.slice(0, 6).map(actionType => (
+                  {actionTypes.slice(0, 9).map(actionType => (
                     <TouchableOpacity
-                      key={actionType.id}
+                      key={`${actionType.id}-B`}
                       style={[styles.actionButton, { backgroundColor: actionType.color }]}
                       onPress={() => handleActionPress(actionType.id, currentMatch.teamB.id)}
                     >
@@ -246,24 +259,27 @@ export default function GameScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
-              </ScrollView>
+              </View>
             )}
 
-            {showHistory && (
-              <ScrollView style={styles.historyPanel}>
-                <Text style={styles.panelTitle}>Histórico</Text>
-                {currentMatch.actions.slice(-10).reverse().map(action => (
+            {activeTab === 'history' && (
+              <View>
+                <Text style={styles.sectionTitle}>Histórico</Text>
+                {currentMatch.actions.slice(-15).reverse().map(action => (
                   <View key={action.id} style={styles.historyItem}>
-                    <Text style={styles.historyTime}>{action.minute}:{action.second.toString().padStart(2, '0')}</Text>
+                    <Text style={styles.historyTime}>
+                      {action.minute}:{action.second.toString().padStart(2, '0')}
+                    </Text>
                     <Text style={styles.historyAction}>{action.action}</Text>
                     <Text style={styles.historyPlayer}>{action.playerName}</Text>
+                    <Text style={styles.historyZone}>{action.zone}</Text>
                   </View>
                 ))}
-              </ScrollView>
+              </View>
             )}
-          </View>
-        )}
-      </View>
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }
@@ -275,44 +291,45 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     position: 'absolute',
-    top: 50,
+    top: 40,
     left: 0,
     right: 0,
     alignItems: 'center',
     zIndex: 10,
   },
   gameTimer: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#90EE90',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+  },
+  timerHint: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 4,
   },
   leftControls: {
     position: 'absolute',
     left: 20,
     bottom: 20,
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     zIndex: 10,
   },
   controlButton: {
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 25,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    borderRadius: 30,
     padding: 15,
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  possessionButton: {
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 25,
-    padding: 10,
-    opacity: 0.7,
-  },
-  activePossession: {
-    opacity: 1,
-    borderWidth: 3,
-    borderColor: '#FFD700',
+  activeControl: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   teamLogo: {
     width: 30,
@@ -324,21 +341,35 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
   },
-  rightPanel: {
-    position: 'absolute',
-    right: 0,
-    top: 100,
-    bottom: 0,
-    width: 250,
-    zIndex: 10,
+  noPossession: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#666',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tabButtons: {
+  noPossessionText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  sidebar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 280,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    zIndex: 5,
+  },
+  sidebarHeader: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   tabButton: {
     flex: 1,
-    padding: 15,
+    padding: 16,
     alignItems: 'center',
   },
   activeTab: {
@@ -347,31 +378,24 @@ const styles = StyleSheet.create({
   tabText: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 16,
   },
-  panelContent: {
+  sidebarContent: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.9)',
+    padding: 16,
   },
-  actionsPanel: {
-    flex: 1,
-    padding: 15,
-  },
-  historyPanel: {
-    flex: 1,
-    padding: 15,
-  },
-  panelTitle: {
+  sectionTitle: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   teamTitle: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 16,
+    marginBottom: 12,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -383,6 +407,7 @@ const styles = StyleSheet.create({
     padding: 8,
     alignItems: 'center',
     minWidth: 70,
+    maxWidth: 80,
   },
   actionEmoji: {
     fontSize: 16,
@@ -397,19 +422,26 @@ const styles = StyleSheet.create({
   historyItem: {
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     marginBottom: 8,
   },
   historyTime: {
     color: '#90EE90',
     fontWeight: 'bold',
+    fontSize: 14,
   },
   historyAction: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 14,
   },
   historyPlayer: {
     color: '#ccc',
     fontSize: 12,
+  },
+  historyZone: {
+    color: '#999',
+    fontSize: 11,
+    fontStyle: 'italic',
   },
 });

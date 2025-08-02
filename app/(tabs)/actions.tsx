@@ -214,11 +214,10 @@ export default function ActionsScreen() {
                 onChangeText={(text) => setActionTypeForm({ ...actionTypeForm, icon: text })}
               />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Cor (hex)"
-                value={actionTypeForm.color}
-                onChangeText={(text) => setActionTypeForm({ ...actionTypeForm, color: text })}
+              <ColorPicker
+                label="Cor"
+                color={actionTypeForm.color}
+                onColorChange={(color) => setActionTypeForm({ ...actionTypeForm, color })}
               />
 
               <View style={styles.categoryButtons}>
@@ -443,11 +442,10 @@ export default function ActionsScreen() {
               onChangeText={(text) => setActionTypeForm({ ...actionTypeForm, icon: text })}
             />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Cor (hex)"
-              value={actionTypeForm.color}
-              onChangeText={(text) => setActionTypeForm({ ...actionTypeForm, color: text })}
+            <ColorPicker
+              label="Cor"
+              color={actionTypeForm.color}
+              onColorChange={(color) => setActionTypeForm({ ...actionTypeForm, color })}
             />
 
             <View style={styles.categoryButtons}>
