@@ -74,8 +74,6 @@ export function IOSFieldView() {
 
   const handlePossessionSelect = (teamId: string) => {
     setPossession(teamId)
-    setActivePanel(null)
-    setShowSidebar(false)
   }
 
   const handleActionComplete = () => {
@@ -83,9 +81,22 @@ export function IOSFieldView() {
     setShowSidebar(false)
   }
 
-  const openPanel = (panel: 'timer' | 'possession' | 'actions' | 'history') => {
+  const openPanel = (panel: 'timer' | 'actions' | 'history') => {
     setActivePanel(panel)
     setShowSidebar(true)
+  }
+
+  const togglePossession = () => {
+    if (!currentMatch.currentPossession) {
+      // Se nenhum time está selecionado, selecionar o time A
+      setPossession(currentMatch.teamA.id)
+    } else if (currentMatch.currentPossession === currentMatch.teamA.id) {
+      // Se time A está selecionado, alternar para time B
+      setPossession(currentMatch.teamB.id)
+    } else {
+      // Se time B está selecionado, alternar para time A
+      setPossession(currentMatch.teamA.id)
+    }
   }
 
   // Determinar qual time está com a posse para mostrar no botão
@@ -144,9 +155,9 @@ export function IOSFieldView() {
         
         {/* Posse de Bola - Mostra logo do time selecionado */}
         <Button
-          variant={activePanel === 'possession' ? 'default' : 'outline'}
+          variant="outline"
           size="icon"
-          onClick={() => openPanel('possession')}
+          onClick={togglePossession}
           className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1"
         >
           {currentPossessionTeam ? (
@@ -191,7 +202,6 @@ export function IOSFieldView() {
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold">
               {activePanel === 'timer' && 'Cronômetro'}
-              {activePanel === 'possession' && 'Posse de Bola'}
               {activePanel === 'actions' && 'Registrar Ação'}
               {activePanel === 'history' && 'Histórico de Ações'}
             </h2>
@@ -237,49 +247,6 @@ export function IOSFieldView() {
                     <RotateCcw className="h-5 w-5" />
                   </Button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activePanel === 'possession' && (
-            <div className="flex flex-col items-center space-y-4">
-              <div className="text-center mb-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">Selecione o time com a posse</h3>
-              </div>
-              <div className="flex flex-col items-center space-y-4">
-                <Button
-                  variant="outline"
-                  onClick={() => handlePossessionSelect(currentMatch.teamA.id)}
-                  className={cn(
-                    "w-24 h-24 flex flex-col items-center justify-center p-3 touch-target rounded-2xl",
-                    currentMatch.currentPossession === currentMatch.teamA.id && 
-                    "ring-2 ring-primary bg-primary/10"
-                  )}
-                >
-                  <img 
-                    src={currentMatch.teamA.logoUrl} 
-                    alt={`${currentMatch.teamA.name} logo`}
-                    className="w-14 h-14 object-contain mb-1"
-                  />
-                  <span className="text-xs font-medium text-center">{currentMatch.teamA.name}</span>
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => handlePossessionSelect(currentMatch.teamB.id)}
-                  className={cn(
-                    "w-24 h-24 flex flex-col items-center justify-center p-3 touch-target rounded-2xl",
-                    currentMatch.currentPossession === currentMatch.teamB.id && 
-                    "ring-2 ring-primary bg-primary/10"
-                  )}
-                >
-                  <img 
-                    src={currentMatch.teamB.logoUrl} 
-                    alt={`${currentMatch.teamB.name} logo`}
-                    className="w-14 h-14 object-contain mb-1"
-                  />
-                  <span className="text-xs font-medium text-center">{currentMatch.teamB.name}</span>
-                </Button>
               </div>
             </div>
           )}
