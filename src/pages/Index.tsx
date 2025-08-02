@@ -16,6 +16,43 @@ import { IOSFieldView } from '@/components/IOSFieldView'
 const Index = () => {
   const { appState, currentMatch, endMatch, setAppState } = useFutebolStore()
   const [activeTab, setActiveTab] = useState('setup')
+  
+  // Detectar Safari iPhone e forçar fullscreen/landscape
+  useEffect(() => {
+    const isSafariIPhone = () => {
+      const userAgent = navigator.userAgent
+      const isIPhone = /iPhone/.test(userAgent)
+      const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent)
+      return isIPhone && isSafari
+    }
+    
+    if (isSafariIPhone()) {
+      // Aplicar classe para forçar fullscreen
+      document.body.classList.add('safari-auto-fullscreen', 'safari-no-scroll')
+      
+      // Configurar viewport para fullscreen
+      const viewport = document.querySelector('meta[name="viewport"]')
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui')
+      }
+      
+      // Tentar forçar orientação paisagem
+      if ('screen' in window && 'orientation' in (window.screen as any)) {
+        try {
+          (window.screen as any).orientation.lock('landscape').catch(() => {
+            console.log('Orientation lock not supported')
+          })
+        } catch (e) {
+          console.log('Orientation API not available')
+        }
+      }
+      
+      // Cleanup ao desmontar
+      return () => {
+        document.body.classList.remove('safari-auto-fullscreen', 'safari-no-scroll')
+      }
+    }
+  }, [])
 
   // Prevent zoom on iOS
   useEffect(() => {
