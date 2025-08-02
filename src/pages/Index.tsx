@@ -16,103 +16,17 @@ import { IOSFieldView } from '@/components/IOSFieldView'
 const Index = () => {
   const { appState, currentMatch, endMatch, setAppState } = useFutebolStore()
   const [activeTab, setActiveTab] = useState('setup')
-  const [isMobileFullscreen, setIsMobileFullscreen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   
-  // Detectar dispositivo móvel e configurar fullscreen
+  // Detectar dispositivo móvel
   useEffect(() => {
-    const isMobileDevice = () => {
-      const userAgent = navigator.userAgent
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
-    }
-    
-    const setupMobileFullscreen = async () => {
-      if (!isMobileDevice()) return
-      
-      // Configurar viewport dinamicamente
-      const viewport = document.querySelector('meta[name="viewport"]')
-      if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui, shrink-to-fit=no')
-      }
-      
-      // Aplicar estilos de fullscreen
-      document.documentElement.style.height = '100vh'
-      document.documentElement.style.height = '-webkit-fill-available'
-      document.body.style.height = '100vh'
-      document.body.style.height = '-webkit-fill-available'
-      document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.width = '100%'
-      document.body.style.top = '0'
-      document.body.style.left = '0'
-      document.body.style.margin = '0'
-      document.body.style.padding = '0'
-      
-      // Esconder barra de endereços
-      const hideAddressBar = () => {
-        setTimeout(() => {
-          window.scrollTo(0, 1)
-          document.body.scrollTop = 1
-        }, 0)
-      }
-      
-      hideAddressBar()
-      
-      // Múltiplas tentativas
-      setTimeout(hideAddressBar, 100)
-      setTimeout(hideAddressBar, 300)
-      setTimeout(hideAddressBar, 500)
-      setTimeout(hideAddressBar, 1000)
-      
-      // Listeners para manter fullscreen
-      const handleOrientationChange = () => {
-        setTimeout(() => {
-          hideAddressBar()
-          document.body.style.height = '100vh'
-          document.body.style.height = '-webkit-fill-available'
-        }, 100)
-      }
-      
-      window.addEventListener('orientationchange', handleOrientationChange)
-      window.addEventListener('resize', hideAddressBar)
-      
-      setIsMobileFullscreen(true)
-      
-      return () => {
-        window.removeEventListener('orientationchange', handleOrientationChange)
-        window.removeEventListener('resize', hideAddressBar)
-        document.documentElement.style.height = ''
-        document.body.style.height = ''
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.width = ''
-        document.body.style.top = ''
-        document.body.style.left = ''
-      }
-    }
-    
-    setupMobileFullscreen()
-  }, [])
-
-  // Prevent zoom on iOS
-  useEffect(() => {
-    const preventDefault = (e: TouchEvent) => {
-      if (e.touches.length > 1) {
-        e.preventDefault()
-      }
-    }
-    
-    document.addEventListener('touchstart', preventDefault, { passive: false })
-    document.addEventListener('touchmove', preventDefault, { passive: false })
-    
-    return () => {
-      document.removeEventListener('touchstart', preventDefault)
-      document.removeEventListener('touchmove', preventDefault)
-    }
+    const checkMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    setIsMobile(checkMobile)
   }, [])
 
   if (appState === 'playing' && currentMatch) {
     return (
-      <div className={`min-h-screen bg-background flex flex-col ios-field-container ${isMobileFullscreen ? 'mobile-fullscreen' : ''}`}>
+      <div className="min-h-screen bg-background flex flex-col">
         <IOSHeader
           title="Partida"
           subtitle={`${currentMatch.teamA.name} vs ${currentMatch.teamB.name}`}
@@ -128,7 +42,7 @@ const Index = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-background flex flex-col ${isMobileFullscreen ? 'mobile-fullscreen' : ''}`}>
+    <div className="min-h-screen bg-background flex flex-col">
       <IOSHeader
         title="⚽ FutebolStats"
         subtitle="Análise Tática em Tempo Real"

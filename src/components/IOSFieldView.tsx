@@ -30,13 +30,13 @@ interface Notification {
 
 export function IOSFieldView() {
   const { currentMatch, togglePlayPause, updateTimer, setPossession, removeAction, actionTypes } = useFutebolStore()
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(true)
   const [showSidebar, setShowSidebar] = useState(false)
   const [activePanel, setActivePanel] = useState<'actions' | 'history' | null>(null)
   const [timer, setTimer] = useState(0)
   const [lastClickTime, setLastClickTime] = useState(0)
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const [isLandscape, setIsLandscape] = useState(false)
+  const [isLandscape, setIsLandscape] = useState(true)
   const [editingAction, setEditingAction] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<{
     teamId?: string
@@ -45,82 +45,130 @@ export function IOSFieldView() {
     timestamp?: number
   }>({})
 
-  // Detectar se é Safari no iPhone
-  const isSafariIPhone = () => {
-    const userAgent = navigator.userAgent
-    const isIPhone = /iPhone/.test(userAgent)
-    const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent) && !/CriOS/.test(userAgent)
-    return isIPhone && isSafari
-  }
+  // Detectar dispositivo móvel
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
 
-  // Detectar orientação
+  // Forçar fullscreen e paisagem no mobile
   useEffect(() => {
-    const checkOrientation = () => {
-      setIsLandscape(window.innerWidth > window.innerHeight)
-    }
+    if (!isMobile) return
 
-    checkOrientation()
-    window.addEventListener('orientationchange', checkOrientation)
-    window.addEventListener('resize', checkOrientation)
+    const setupMobileFullscreen = () => {
+      // Configurar viewport
+      const viewport = document.querySelector('meta[name="viewport"]')
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
+      }
 
-    return () => {
-      window.removeEventListener('orientationchange', checkOrientation)
-      window.removeEventListener('resize', checkOrientation)
-    }
-  }, [])
+      // Aplicar estilos de fullscreen
+      document.documentElement.style.cssText = `
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+        width: 100vw !important;
+        overflow: hidden !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      `
+      
+      document.body.style.cssText = `
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+        width: 100vw !important;
+        overflow: hidden !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #2d5016 !important;
+      `
 
-  // Configurar fullscreen e orientação quando o componente monta
-  useEffect(() => {
-    const setupFullscreen = async () => {
-      try {
-        // Tentar fullscreen API primeiro
-        const docEl = document.documentElement
-        if (docEl.requestFullscreen) {
-          await docEl.requestFullscreen()
-        } else if ((docEl as any).webkitRequestFullscreen) {
-          await (docEl as any).webkitRequestFullscreen()
-        } else if ((docEl as any).mozRequestFullScreen) {
-          await (docEl as any).mozRequestFullScreen()
-        } else if ((docEl as any).msRequestFullscreen) {
-          await (docEl as any).msRequestFullscreen()
+      // Forçar paisagem se estiver em portrait
+      const forceOrientation = () => {
+        const isPortrait = window.innerHeight > window.innerWidth
+        
+        if (isPortrait) {
+          // Rotacionar via CSS
+          document.body.style.transform = 'rotate(90deg)'
+          document.body.style.transformOrigin = 'center center'
+          document.body.style.width = '100vh'
+          document.body.style.height = '100vw'
+          document.body.style.position = 'fixed'
+          document.body.style.top = '50%'
+          document.body.style.left = '50%'
+          document.body.style.marginTop = '-50vw'
+          document.body.style.marginLeft = '-50vh'
+        } else {
+          // Resetar se já estiver em paisagem
+          document.body.style.transform = ''
+          document.body.style.transformOrigin = ''
+          document.body.style.width = '100vw'
+          document.body.style.height = '100vh'
+          document.body.style.top = '0'
+          document.body.style.left = '0'
+          document.body.style.marginTop = '0'
+          document.body.style.marginLeft = '0'
         }
-      } catch (error) {
-        console.warn('Fullscreen setup failed:', error)
+        
+        setIsLandscape(!isPortrait)
+      }
+
+      // Aplicar imediatamente
+      forceOrientation()
+
+      // Esconder barra de endereços (Safari)
+      const hideAddressBar = () => {
+        setTimeout(() => {
+          window.scrollTo(0, 1)
+          if (document.body.scrollTop !== undefined) {
+            document.body.scrollTop = 1
+          }
+        }, 0)
+      }
+
+      // Múltiplas tentativas para esconder UI
+      hideAddressBar()
+      setTimeout(hideAddressBar, 100)
+      setTimeout(hideAddressBar, 300)
+      setTimeout(hideAddressBar, 500)
+      setTimeout(hideAddressBar, 1000)
+      setTimeout(hideAddressBar, 2000)
+
+      // Listeners para mudanças de orientação
+      const handleOrientationChange = () => {
+        setTimeout(() => {
+          forceOrientation()
+          hideAddressBar()
+        }, 100)
+      }
+
+      window.addEventListener('orientationchange', handleOrientationChange)
+      window.addEventListener('resize', handleOrientationChange)
+      
+      // Prevenir zoom
+      const preventZoom = (e: TouchEvent) => {
+        if (e.touches.length > 1) {
+          e.preventDefault()
+        }
       }
       
-      // Sempre definir como fullscreen para dispositivos móveis
-      setIsFullscreen(true)
+      document.addEventListener('touchstart', preventZoom, { passive: false })
+      document.addEventListener('touchmove', preventZoom, { passive: false })
+
+      return () => {
+        window.removeEventListener('orientationchange', handleOrientationChange)
+        window.removeEventListener('resize', handleOrientationChange)
+        document.removeEventListener('touchstart', preventZoom)
+        document.removeEventListener('touchmove', preventZoom)
+      }
     }
 
-    setupFullscreen()
-  }, [])
-
-  // Sincronizar estado fullscreen com o navegador
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      // Verificar diferentes propriedades de fullscreen
-      const isFullscreenActive = !!(
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).mozFullScreenElement ||
-        (document as any).msFullscreenElement
-      )
-      setIsFullscreen(isFullscreenActive)
-    }
-
-    // Adicionar listeners para diferentes navegadores
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange)
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange)
-    
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange)
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange)
-    }
-  }, [])
+    const cleanup = setupMobileFullscreen()
+    return cleanup
+  }, [isMobile])
 
   // Sistema de notificações customizado
   const showNotification = (message: string, type: 'error' | 'success' | 'warning' | 'info' = 'info', duration = 3000) => {
@@ -142,38 +190,25 @@ export function IOSFieldView() {
 
   // Interceptar alerts nativos quando em fullscreen
   useEffect(() => {
-    if (isFullscreen) {
-      const originalAlert = window.alert
-      window.alert = (message: string) => {
-        showNotification(message, 'warning')
-      }
-      
-      // Escutar eventos customizados de notificação
-      const handleCustomNotification = (event: CustomEvent) => {
-        const { message, type } = event.detail
-        showNotification(message, type)
-      }
-      
-      window.addEventListener('showNotification', handleCustomNotification as EventListener)
-      
-      return () => {
-        window.alert = originalAlert
-        window.removeEventListener('showNotification', handleCustomNotification as EventListener)
-      }
-    } else {
-      // Também escutar eventos quando não está em fullscreen
-      const handleCustomNotification = (event: CustomEvent) => {
-        const { message, type } = event.detail
-        showNotification(message, type)
-      }
-      
-      window.addEventListener('showNotification', handleCustomNotification as EventListener)
-      
-      return () => {
-        window.removeEventListener('showNotification', handleCustomNotification as EventListener)
-      }
+    const originalAlert = window.alert
+    window.alert = (message: string) => {
+      showNotification(message, 'warning')
     }
-  }, [isFullscreen])
+    
+    // Escutar eventos customizados de notificação
+    const handleCustomNotification = (event: CustomEvent) => {
+      const { message, type } = event.detail
+      showNotification(message, type)
+    }
+    
+    window.addEventListener('showNotification', handleCustomNotification as EventListener)
+    
+    return () => {
+      window.alert = originalAlert
+      window.removeEventListener('showNotification', handleCustomNotification as EventListener)
+    }
+  }, [])
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
     
@@ -226,86 +261,17 @@ export function IOSFieldView() {
     setLastClickTime(now)
   }
 
-  const toggleFullscreen = () => {
-    try {
-      if (!document.fullscreenElement) {
-        // Entrar em tela cheia - tentar diferentes métodos
-        const docEl = document.documentElement
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen()
-        } else if ((docEl as any).webkitRequestFullscreen) {
-          // Safari
-          (docEl as any).webkitRequestFullscreen()
-        } else if ((docEl as any).mozRequestFullScreen) {
-          // Firefox
-          (docEl as any).mozRequestFullScreen()
-        } else if ((docEl as any).msRequestFullscreen) {
-          // IE/Edge
-          (docEl as any).msRequestFullscreen()
-        }
-      } else {
-        // Sair da tela cheia - tentar diferentes métodos
-        if (document.exitFullscreen) {
-          document.exitFullscreen()
-        } else if ((document as any).webkitExitFullscreen) {
-          // Safari
-          (document as any).webkitExitFullscreen()
-        } else if ((document as any).mozCancelFullScreen) {
-          // Firefox
-          (document as any).mozCancelFullScreen()
-        } else if ((document as any).msExitFullscreen) {
-          // IE/Edge
-          (document as any).msExitFullscreen()
-        }
-      }
-    } catch (error) {
-      console.warn('Fullscreen not supported or failed:', error)
-      // Fallback: simular fullscreen com CSS
-      setIsFullscreen(!isFullscreen)
-    }
-  }
-
   const exitAnalysis = () => {
-    try {
-      if (isSafariIPhone()) {
-        // Para Safari iPhone, restaurar viewport e orientação
-        const viewport = document.querySelector('meta[name="viewport"]')
-        if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=portrait')
-        }
-        
-        // Restaurar overflow
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.width = ''
-        document.body.style.height = ''
-        document.body.style.top = ''
-        document.body.style.left = ''
-        
-        // Tentar desbloquear orientação
-        if ('screen' in window && 'orientation' in (window.screen as any)) {
-          try {
-            (window.screen as any).orientation.unlock()
-          } catch (e) {
-            console.log('Orientation unlock not supported')
-          }
-        }
-      } else {
-        // Para outros navegadores, sair do fullscreen
-        if (document.fullscreenElement) {
-          if (document.exitFullscreen) {
-            document.exitFullscreen()
-          } else if ((document as any).webkitExitFullscreen) {
-            (document as any).webkitExitFullscreen()
-          } else if ((document as any).mozCancelFullScreen) {
-            (document as any).mozCancelFullScreen()
-          } else if ((document as any).msExitFullscreen) {
-            (document as any).msExitFullscreen()
-          }
-        }
+    if (isMobile) {
+      // Restaurar estilos
+      document.documentElement.style.cssText = ''
+      document.body.style.cssText = ''
+      
+      // Restaurar viewport
+      const viewport = document.querySelector('meta[name="viewport"]')
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover')
       }
-    } catch (error) {
-      console.warn('Exit fullscreen failed:', error)
     }
     
     // Voltar para a tela principal
@@ -398,16 +364,13 @@ export function IOSFieldView() {
   return (
     <div className={cn(
       "flex h-full relative",
-      isFullscreen ? "fixed inset-0 z-50 bg-black safari-fullscreen safari-viewport-fill overflow-hidden" : "overflow-hidden",
-      isSafariIPhone() && isFullscreen && "safari-iphone-fullscreen safari-force-fullscreen",
-      isSafariIPhone() && isFullscreen && isLandscape && "landscape-optimized"
+      "fixed inset-0 z-50 bg-black overflow-hidden",
+      isMobile && "mobile-fullscreen-field"
     )}>
       {/* Campo Principal */}
       <div className={cn(
         "flex-1 relative flex items-center justify-center",
-        isFullscreen && "w-screen h-screen p-0",
-        isSafariIPhone() && isFullscreen && isLandscape && "safari-landscape-field",
-        isSafariIPhone() && "notch-safe-left notch-safe-right"
+        "w-screen h-screen p-0"
       )}>
         <FieldGrid isFullscreen={isFullscreen} />
         
@@ -415,7 +378,7 @@ export function IOSFieldView() {
         {notifications.length > 0 && (
           <div className={cn(
             "fixed left-1/2 transform -translate-x-1/2 z-50 space-y-2 pointer-events-none",
-            isSafariIPhone() && isLandscape ? "top-2" : "top-4"
+            isLandscape ? "top-2" : "top-4"
           )}>
             {notifications.map((notification) => (
               <div
@@ -445,7 +408,7 @@ export function IOSFieldView() {
         {/* Botão de Sair - Canto Inferior Direito */}
         <div className={cn(
           "absolute right-4",
-          isSafariIPhone() && isLandscape ? "bottom-2" : "bottom-4"
+          isLandscape ? "bottom-2" : "bottom-4"
         )}>
           <Button
             variant="destructive"
@@ -453,7 +416,7 @@ export function IOSFieldView() {
             onClick={exitAnalysis}
             className={cn(
               "rounded-full bg-destructive/90 backdrop-blur-sm border-destructive/50 touch-target shadow-lg active:scale-95 transition-transform hover:bg-destructive",
-              isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+              isLandscape ? "h-10 w-10" : "h-12 w-12"
             )}
           >
             <X className="h-5 w-5" />
@@ -463,12 +426,12 @@ export function IOSFieldView() {
         {/* Cronômetro Central */}
         <div className={cn(
           "absolute left-1/2 transform -translate-x-1/2 pointer-events-none z-30",
-          isFullscreen ? (isSafariIPhone() && isLandscape ? "top-2" : "top-4") : "top-2"
+          isLandscape ? "top-2" : "top-4"
         )}>
           <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2">
             <div className={cn(
               "font-mono font-bold text-center",
-              isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+              isLandscape ? "text-xs" : "text-sm"
             )}>
               {formatTime(timer)}
             </div>
@@ -479,7 +442,7 @@ export function IOSFieldView() {
       {/* Botões Laterais - Canto Inferior Esquerdo */}
       <div className={cn(
         "absolute left-4 z-40 flex",
-        isSafariIPhone() && isLandscape ? "bottom-2 space-x-2" : "bottom-4 space-x-3"
+        isLandscape ? "bottom-2 space-x-2" : "bottom-4 space-x-3"
       )}>
         {/* Cronômetro */}
         <Button
@@ -488,7 +451,7 @@ export function IOSFieldView() {
           onClick={handleTimerClick}
           className={cn(
             "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
-            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+            isLandscape ? "h-10 w-10" : "h-12 w-12"
           )}
         >
           <Clock className="h-5 w-5" />
@@ -501,7 +464,7 @@ export function IOSFieldView() {
           onClick={togglePossession}
           className={cn(
             "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg p-1 active:scale-95 transition-transform",
-            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+            isLandscape ? "h-10 w-10" : "h-12 w-12"
           )}
         >
           {currentPossessionTeam ? (
@@ -510,7 +473,7 @@ export function IOSFieldView() {
               alt={`${currentPossessionTeam.name} logo`}
               className={cn(
                 "object-contain",
-                isSafariIPhone() && isLandscape ? "w-6 h-6" : "w-7 h-7"
+                isLandscape ? "w-6 h-6" : "w-7 h-7"
               )}
             />
           ) : (
@@ -525,7 +488,7 @@ export function IOSFieldView() {
           onClick={() => openPanel('actions')}
           className={cn(
             "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
-            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+            isLandscape ? "h-10 w-10" : "h-12 w-12"
           )}
         >
           <Zap className="h-5 w-5" />
@@ -538,7 +501,7 @@ export function IOSFieldView() {
           onClick={() => openPanel('history')}
           className={cn(
             "rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg active:scale-95 transition-transform",
-            isSafariIPhone() && isLandscape ? "h-10 w-10" : "h-12 w-12"
+            isLandscape ? "h-10 w-10" : "h-12 w-12"
           )}
         >
           <History className="h-5 w-5" />
@@ -548,7 +511,7 @@ export function IOSFieldView() {
       {/* Painel Lateral Direito - Menor */}
       <div className={cn(
         "fixed right-0 top-0 h-full bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
-        isSafariIPhone() && isLandscape ? "w-48" : "w-56 sm:w-64",
+        isLandscape ? "w-48" : "w-56 sm:w-64",
         showSidebar ? "translate-x-0" : "translate-x-full"
       )}>
         {/* Header do Painel */}
@@ -556,7 +519,7 @@ export function IOSFieldView() {
           <div className="flex items-center justify-between">
             <h2 className={cn(
               "font-semibold",
-              isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+              isLandscape ? "text-xs" : "text-sm"
             )}>
               {activePanel === 'actions' && 'Registrar Ação'}
               {activePanel === 'history' && 'Histórico de Ações'}
@@ -570,7 +533,7 @@ export function IOSFieldView() {
               }}
               className={cn(
                 "rounded-full",
-                isSafariIPhone() && isLandscape ? "h-5 w-5" : "h-6 w-6"
+                isLandscape ? "h-5 w-5" : "h-6 w-6"
               )}
             >
               <X className="h-3 w-3" />
@@ -581,22 +544,22 @@ export function IOSFieldView() {
         {/* Conteúdo do Painel Ativo */}
         <div className={cn(
           "flex-1 overflow-y-auto",
-          isSafariIPhone() && isLandscape ? "p-2" : "p-3"
+          isLandscape ? "p-2" : "p-3"
         )}>
           {activePanel === 'actions' && (
             <div className={cn(
-              isSafariIPhone() && isLandscape ? "space-y-2" : "space-y-4"
+              isLandscape ? "space-y-2" : "space-y-4"
             )}>
               <div className="text-center mb-4">
                 <h3 className={cn(
                   "font-semibold text-muted-foreground mb-2",
-                  isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+                  isLandscape ? "text-xs" : "text-sm"
                 )}>Registrar Ação</h3>
                 {currentMatch.currentPossession && (
                   <div className="p-2 bg-muted/30 rounded-lg text-center">
                     <span className={cn(
                       "font-medium",
-                      isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                      isLandscape ? "text-xs" : "text-xs"
                     )}>{currentPossessionTeam?.name}</span>
                   </div>
                 )}
@@ -608,7 +571,7 @@ export function IOSFieldView() {
                   <Users className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                   <p className={cn(
                     "text-muted-foreground",
-                    isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                    isLandscape ? "text-xs" : "text-xs"
                   )}>
                     Selecione a posse de bola primeiro
                   </p>
@@ -619,18 +582,18 @@ export function IOSFieldView() {
 
           {activePanel === 'history' && (
             <div className={cn(
-              isSafariIPhone() && isLandscape ? "space-y-2" : "space-y-3"
+              isLandscape ? "space-y-2" : "space-y-3"
             )}>
               <div className="text-center mb-4">
                 <h3 className={cn(
                   "font-semibold text-muted-foreground mb-2",
-                  isSafariIPhone() && isLandscape ? "text-xs" : "text-sm"
+                  isLandscape ? "text-xs" : "text-sm"
                 )}>
                   Últimas ações registradas
                 </h3>
                 <div className={cn(
                   "text-muted-foreground",
-                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                  isLandscape ? "text-xs" : "text-xs"
                 )}>
                   Total: {currentMatch.actions.length} ações
                 </div>
@@ -639,7 +602,7 @@ export function IOSFieldView() {
               {/* Lista das últimas 10 ações */}
               <div className={cn(
                 "overflow-y-auto",
-                isSafariIPhone() && isLandscape ? "space-y-1 max-h-48" : "space-y-2 max-h-72"
+                isLandscape ? "space-y-1 max-h-48" : "space-y-2 max-h-72"
               )}>
                 {currentMatch.actions
                   .slice(-8)
@@ -652,17 +615,17 @@ export function IOSFieldView() {
                     return (
                       <div key={action.id} className={cn(
                         "rounded-lg bg-muted/30 border border-border/30",
-                        isSafariIPhone() && isLandscape ? "p-2" : "p-3"
+                        isLandscape ? "p-2" : "p-3"
                       )}>
                         {isEditing ? (
                           <div className={cn(
-                            isSafariIPhone() && isLandscape ? "space-y-2" : "space-y-3"
+                            isLandscape ? "space-y-2" : "space-y-3"
                           )}>
                             {/* Edição de Time */}
                             <div>
                               <label className={cn(
                                 "font-medium text-muted-foreground",
-                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-xs" : "text-xs"
                               )}>Time</label>
                               <Select
                                 value={editForm.teamId || action.teamId}
@@ -670,7 +633,7 @@ export function IOSFieldView() {
                               >
                                 <SelectTrigger className={cn(
                                   "text-xs",
-                                  isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                  isLandscape ? "h-7" : "h-8"
                                 )}>
                                   <SelectValue />
                                 </SelectTrigger>
@@ -686,7 +649,7 @@ export function IOSFieldView() {
                               <div>
                                 <label className={cn(
                                   "font-medium text-muted-foreground",
-                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-xs" : "text-xs"
                                 )}>Ação</label>
                                 <Select
                                   value={editForm.actionName || action.actionName || ''}
@@ -694,7 +657,7 @@ export function IOSFieldView() {
                                 >
                                   <SelectTrigger className={cn(
                                     "text-xs",
-                                    isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                    isLandscape ? "h-7" : "h-8"
                                   )}>
                                     <SelectValue />
                                   </SelectTrigger>
@@ -714,7 +677,7 @@ export function IOSFieldView() {
                               <div>
                                 <label className={cn(
                                   "font-medium text-muted-foreground",
-                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-xs" : "text-xs"
                                 )}>Jogador</label>
                                 <Select
                                   value={editForm.playerId || action.playerId || ''}
@@ -722,7 +685,7 @@ export function IOSFieldView() {
                                 >
                                   <SelectTrigger className={cn(
                                     "text-xs",
-                                    isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                    isLandscape ? "h-7" : "h-8"
                                   )}>
                                     <SelectValue />
                                   </SelectTrigger>
@@ -744,7 +707,7 @@ export function IOSFieldView() {
                             <div>
                               <label className={cn(
                                 "font-medium text-muted-foreground",
-                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-xs" : "text-xs"
                               )}>Tempo</label>
                               <div className="flex space-x-2">
                                 <div className="flex-1">
@@ -758,7 +721,7 @@ export function IOSFieldView() {
                                     }}
                                     className={cn(
                                       "text-xs",
-                                      isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                      isLandscape ? "h-7" : "h-8"
                                     )}
                                     min="0"
                                     placeholder="Min"
@@ -766,7 +729,7 @@ export function IOSFieldView() {
                                 </div>
                                 <span className={cn(
                                   "text-muted-foreground self-center",
-                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-xs" : "text-xs"
                                 )}>:</span>
                                 <div className="flex-1">
                                   <Input
@@ -779,7 +742,7 @@ export function IOSFieldView() {
                                     }}
                                     className={cn(
                                       "text-xs",
-                                      isSafariIPhone() && isLandscape ? "h-7" : "h-8"
+                                      isLandscape ? "h-7" : "h-8"
                                     )}
                                     min="0"
                                     max="59"
@@ -797,7 +760,7 @@ export function IOSFieldView() {
                                 onClick={handleSaveEdit}
                                 className={cn(
                                   "flex-1 text-xs",
-                                  isSafariIPhone() && isLandscape ? "h-6" : "h-7"
+                                  isLandscape ? "h-6" : "h-7"
                                 )}
                               >
                                 <Save className="h-3 w-3 mr-1" />
@@ -809,7 +772,7 @@ export function IOSFieldView() {
                                 onClick={handleCancelEdit}
                                 className={cn(
                                   "flex-1 text-xs",
-                                  isSafariIPhone() && isLandscape ? "h-6" : "h-7"
+                                  isLandscape ? "h-6" : "h-7"
                                 )}
                               >
                                 <X className="h-3 w-3 mr-1" />
@@ -822,20 +785,20 @@ export function IOSFieldView() {
                             <div className="flex-1 min-w-0">
                               <div className={cn(
                                 "font-medium truncate",
-                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-xs" : "text-xs"
                               )}>
                                 {action.actionName || (action.type === 'possession' ? 'Posse de Bola' : 'Ação')}
                               </div>
                               <div className={cn(
                                 "text-muted-foreground mt-1",
-                                isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                isLandscape ? "text-xs" : "text-xs"
                               )}>
                                 {team.name} • {formatTime(action.timestamp)}
                               </div>
                               {playerInfo && (
                                 <div className={cn(
                                   "text-primary mt-1 flex items-center",
-                                  isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                                  isLandscape ? "text-xs" : "text-xs"
                                 )}>
                                   <User className="h-3 w-3 mr-1" />
                                   {playerInfo}
@@ -844,7 +807,7 @@ export function IOSFieldView() {
                             </div>
                             <div className={cn(
                               "flex flex-col ml-2",
-                              isSafariIPhone() && isLandscape ? "space-y-0.5" : "space-y-1"
+                              isLandscape ? "space-y-0.5" : "space-y-1"
                             )}>
                               <Button
                                 variant="ghost"
@@ -852,7 +815,7 @@ export function IOSFieldView() {
                                 onClick={() => handleEditAction(action)}
                                 className={cn(
                                   "text-muted-foreground hover:text-foreground",
-                                  isSafariIPhone() && isLandscape ? "h-5 w-5" : "h-6 w-6"
+                                  isLandscape ? "h-5 w-5" : "h-6 w-6"
                                 )}
                               >
                                 <Edit className="h-3 w-3" />
@@ -866,7 +829,7 @@ export function IOSFieldView() {
                                 }}
                                 className={cn(
                                   "text-muted-foreground hover:text-destructive",
-                                  isSafariIPhone() && isLandscape ? "h-5 w-5" : "h-6 w-6"
+                                  isLandscape ? "h-5 w-5" : "h-6 w-6"
                                 )}
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -883,7 +846,7 @@ export function IOSFieldView() {
                     <History className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
                     <p className={cn(
                       "text-muted-foreground",
-                      isSafariIPhone() && isLandscape ? "text-xs" : "text-xs"
+                      isLandscape ? "text-xs" : "text-xs"
                     )}>
                     Nenhuma ação registrada ainda
                     </p>
