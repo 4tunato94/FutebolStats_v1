@@ -26,11 +26,15 @@
     },
     "web": {
       "favicon": "./assets/icon.png",
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static"
     },
     "plugins": [
       "expo-router"
     ],
-    "scheme": "futebol-stats"
+    "scheme": "futebol-stats",
+    "experiments": {
+      "typedRoutes": false
+    }
   }
 }
