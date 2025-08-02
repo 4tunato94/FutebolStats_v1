@@ -18,10 +18,6 @@
       "bundleIdentifier": "com.futebolstats.mobile"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#2d5016"
-      },
       "package": "com.futebolstats.mobile"
     },
     "web": {
