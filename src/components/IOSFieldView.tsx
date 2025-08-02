@@ -12,6 +12,8 @@ import {
   Trash2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { FieldGrid } from '@/components/FieldGrid'
 import { useFutebolStore } from '@/stores/futebolStore'
 import { ActionPanel } from '@/components/ActionPanel'
@@ -33,6 +35,13 @@ export function IOSFieldView() {
   const [lastClickTime, setLastClickTime] = useState(0)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isLandscape, setIsLandscape] = useState(false)
+  const [editingAction, setEditingAction] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<{
+    teamId?: string
+    actionName?: string
+    playerId?: string
+    timestamp?: number
+  }>({})
 
   // Detectar se é Safari no iPhone
   const isSafariIPhone = () => {
@@ -346,6 +355,32 @@ export function IOSFieldView() {
   const openPanel = (panel: 'actions' | 'history') => {
     setActivePanel(panel)
     setShowSidebar(true)
+  }
+
+  const handleEditAction = (action: any) => {
+    setEditingAction(action.id)
+    setEditForm({
+      teamId: action.teamId,
+      actionName: action.actionName,
+      playerId: action.playerId,
+      timestamp: action.timestamp
+    })
+  }
+
+  const handleSaveEdit = () => {
+    if (!editingAction || !currentMatch) return
+    
+    const { updateAction } = useFutebolStore.getState()
+    updateAction(editingAction, editForm)
+    
+    setEditingAction(null)
+    setEditForm({})
+    showNotification('Ação atualizada', 'success')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingAction(null)
+    setEditForm({})
   }
 
   const togglePossession = () => {
