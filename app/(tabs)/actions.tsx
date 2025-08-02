@@ -10,7 +10,8 @@ export default function ActionsScreen() {
     actionTypes, 
     addActionType, 
     updateActionType, 
-    deleteActionType 
+    deleteActionType,
+    currentMatch
   } = useFutebolStore();
   
   const [showAddActionType, setShowAddActionType] = useState(false);
@@ -83,12 +84,6 @@ export default function ActionsScreen() {
       multiplePlayersAction: actionType.multiplePlayersAction || false,
       teamChangeAction: actionType.teamChangeAction || false
     });
-  };
-
-  const getSelectedTeamPlayers = () => {
-    if (!currentMatch || !selectedTeam) return [];
-    const team = currentMatch.teamA.id === selectedTeam ? currentMatch.teamA : currentMatch.teamB;
-    return team.players;
   };
 
   if (!currentMatch) {
