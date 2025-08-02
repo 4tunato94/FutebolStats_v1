@@ -9,7 +9,8 @@ import {
   X,
   AlertCircle,
   Edit,
-  Trash2
+  Trash2,
+  User
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
