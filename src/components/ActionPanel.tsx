@@ -129,32 +129,8 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
   return (
     <>
       <div className="space-y-4">
-        {onClose && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Grid3X3 className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold text-lg ios-text-fixed">Ações Específicas</h3>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="h-10 w-10 rounded-full touch-target"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        )}
-        
       {currentMatch.currentPossession ? (
         <div className="space-y-4">
-          {!onClose && (
-            <div className="flex items-center space-x-3 mb-4">
-            <Grid3X3 className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-lg ios-text-fixed">Ações Específicas</h3>
-          </div>
-          )}
-          
           <div className="grid grid-cols-2 gap-4">
             {actionTypes.map((actionType) => (
               <Button
