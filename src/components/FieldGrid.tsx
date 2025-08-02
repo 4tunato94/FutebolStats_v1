@@ -92,8 +92,8 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
       <div className="absolute inset-0 bg-black/10" />
       
       {/* Grid de zonas 20x13 invisível - sem espaçamento */}
-      <div className="absolute inset-0 grid grid-cols-20 grid-rows-13">
-        {Array.from({ length: 260 }, (_, index) => {
+      <div className="absolute inset-0 grid grid-cols-20 grid-rows-14">
+        {Array.from({ length: 280 }, (_, index) => {
           const row = Math.floor(index / 20)
           const col = index % 20
           const zoneKey = `${row}-${col}`
