@@ -3,10 +3,11 @@
     "name": "FutebolStats",
     "slug": "futebol-stats-mobile",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#2d5016"
     },
@@ -26,19 +27,13 @@
     },
     "web": {
       "favicon": "./assets/icon.png",
-      "output": "static"
+      "output": "static",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router"
     ],
     "scheme": "futebol-stats",
-    "experiments": {
-      "typedRoutes": false
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      }
-    }
+    "newArchEnabled": false
   }
 }
