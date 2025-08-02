@@ -126,6 +126,12 @@ export default {
 			'xl': '1280px',
 			'2xl': '1400px',
 			'ios': { 'raw': '(max-width: 767px) and (-webkit-min-device-pixel-ratio: 2)' }
+		},
+		gridTemplateColumns: {
+			'20': 'repeat(20, minmax(0, 1fr))'
+		},
+		gridTemplateRows: {
+			'13': 'repeat(13, minmax(0, 1fr))'
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

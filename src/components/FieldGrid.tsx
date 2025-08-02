@@ -91,11 +91,11 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
       {/* Overlay sutil para melhor contraste */}
       <div className="absolute inset-0 bg-black/10" />
       
-      {/* Grid de zonas 5x5 invisível - sem espaçamento */}
-      <div className="absolute inset-0 grid grid-cols-5 grid-rows-5">
-        {Array.from({ length: 25 }, (_, index) => {
-          const row = Math.floor(index / 5)
-          const col = index % 5
+      {/* Grid de zonas 20x13 invisível - sem espaçamento */}
+      <div className="absolute inset-0 grid grid-cols-20 grid-rows-13">
+        {Array.from({ length: 260 }, (_, index) => {
+          const row = Math.floor(index / 20)
+          const col = index % 20
           const zoneKey = `${row}-${col}`
           const isMarked = markedZones.has(zoneKey)
           
@@ -111,7 +111,7 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
             >
               {/* Indicador de intensidade */}
               {getZoneIntensity(row, col).total > 0 && (
-                <div className="absolute top-2 right-2 w-4 h-4 bg-white rounded-full opacity-90 shadow-lg border border-gray-300" />
+                <div className="absolute top-0.5 right-0.5 w-2 h-2 bg-white rounded-full opacity-90 shadow-lg border border-gray-300" />
               )}
             </button>
           )
