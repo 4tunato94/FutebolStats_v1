@@ -322,6 +322,18 @@ export function IOSFieldView() {
     }, 100)
   }
 
+  // Função para obter informações do jogador
+  const getPlayerInfo = (teamId: string, playerId: string | undefined) => {
+    if (!playerId || !currentMatch) return null
+    
+    const team = teamId === currentMatch.teamA.id ? currentMatch.teamA : currentMatch.teamB
+    const player = team.players.find(p => p.id === playerId)
+    
+    if (!player) return null
+    
+    return `#${player.number} ${player.name} • ${player.position}`
+  }
+
   const handlePossessionSelect = (teamId: string) => {
     setPossession(teamId)
   }
