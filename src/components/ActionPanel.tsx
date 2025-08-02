@@ -132,7 +132,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
       {currentMatch.currentPossession ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            {actionTypes.map((actionType) => (
+            {actionTypes.filter(actionType => actionType && actionType.id).map((actionType) => (
               <Button
                 key={actionType.id}
                 variant="outline"
