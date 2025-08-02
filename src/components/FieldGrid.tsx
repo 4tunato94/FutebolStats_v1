@@ -78,17 +78,20 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
     <div className={cn(
       "relative rounded-xl overflow-hidden shadow-field",
       isFullscreen 
-        ? "w-full h-full min-h-0 min-w-0" 
+        ? "w-full h-full min-h-0 min-w-0 rounded-none" 
         : "aspect-[16/10] w-full max-w-6xl mx-auto"
     )}>
       {/* Imagem do campo como fundo */}
       <div 
         className={cn(
-          "absolute inset-0 bg-no-repeat",
-          "bg-contain"
+          "absolute inset-0 bg-no-repeat bg-center",
+          isFullscreen ? "bg-cover" : "bg-contain"
         )}
         style={{
-          backgroundImage: 'url(/campov1-horizontal.png)'
+          backgroundImage: 'url(/campov1-horizontal.png)',
+          ...(isFullscreen && {
+            backgroundSize: '100% 100%' // Força a imagem a preencher toda a área
+          })
         }}
       />
       
@@ -102,7 +105,7 @@ export function FieldGrid({ isFullscreen = false }: FieldGridProps) {
       <div className={cn(
         "absolute grid grid-cols-20 grid-rows-13",
         isFullscreen 
-          ? "inset-2 sm:inset-4 md:inset-6" 
+          ? "inset-0" 
           : "inset-2 md:inset-4"
       )}>
         {Array.from({ length: 260 }, (_, index) => {

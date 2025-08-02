@@ -86,7 +86,7 @@ input, select, textarea {
 
 /* Campo responsivo para diferentes orientações */
 .field-responsive {
-  background-size: contain;
+  background-size: 100% 100% !important;
   background-position: center;
   background-repeat: no-repeat;
   width: 100%;
@@ -95,13 +95,13 @@ input, select, textarea {
 
 @media (orientation: landscape) {
   .field-responsive {
-    background-size: contain;
+    background-size: 100% 100% !important;
   }
 }
 
 @media (orientation: portrait) {
   .field-responsive {
-    background-size: contain;
+    background-size: 100% 100% !important;
   }
 }
 
@@ -145,7 +145,7 @@ input, select, textarea {
   
   /* Field image optimization */
   .field-fullscreen-bg {
-    background-size: contain !important;
+    background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
     width: 100% !important;
@@ -183,7 +183,7 @@ input, select, textarea {
     
     /* Campo em landscape otimizado */
     .safari-landscape-field .field-grid {
-      background-size: contain !important;
+      background-size: 100% 100% !important;
       background-position: center !important;
     }
   }
