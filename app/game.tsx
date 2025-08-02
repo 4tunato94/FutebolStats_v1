@@ -26,6 +26,13 @@ export default function GameScreen() {
   const [clickCount, setClickCount] = useState(0);
   const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  // Handle navigation when currentMatch is null
+  useEffect(() => {
+    if (!currentMatch) {
+      router.replace('/');
+    }
+  }, [currentMatch]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -157,7 +164,6 @@ export default function GameScreen() {
   };
 
   if (!currentMatch) {
-    router.replace('/');
     return null;
   }
 
