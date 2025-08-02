@@ -10,20 +10,15 @@ interface ImagePickerProps {
 }
 
 export default function ImagePicker({ imageUri, onImageSelected, label }: ImagePickerProps) {
-  const requestPermission = async () => {
-    const { status } = await ImagePickerExpo.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos.');
-      return false;
-    }
-    return true;
-  };
-
   const pickImage = async () => {
-    const hasPermission = await requestPermission();
-    if (!hasPermission) return;
-
     try {
+      // Solicitar permissão
+      const { status } = await ImagePickerExpo.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos.');
+        return;
+      }
+
       const result = await ImagePickerExpo.launchImageLibraryAsync({
         mediaTypes: ImagePickerExpo.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -36,6 +31,7 @@ export default function ImagePicker({ imageUri, onImageSelected, label }: ImageP
       }
     } catch (error) {
       console.log('Error picking image:', error);
+      Alert.alert('Erro', 'Não foi possível acessar a galeria de fotos.');
     }
   };
 
@@ -58,6 +54,7 @@ export default function ImagePicker({ imageUri, onImageSelected, label }: ImageP
       }
     } catch (error) {
       console.log('Error taking photo:', error);
+      Alert.alert('Erro', 'Não foi possível acessar a câmera.');
     }
   };
 
