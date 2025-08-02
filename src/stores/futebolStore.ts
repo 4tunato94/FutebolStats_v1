@@ -22,6 +22,7 @@ interface FutebolState {
   deleteGame: (gameId: string) => void
   loadSavedGame: (game: SavedGame) => void
   
+  removeAction: (actionId: string) => void
   updateGameAction: (gameId: string, actionId: string, updates: Partial<GameAction>) => void
   deleteGameAction: (gameId: string, actionId: string) => void
   

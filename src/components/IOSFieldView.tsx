@@ -7,7 +7,9 @@ import {
   Zap,
   History,
   X,
-  AlertCircle
+  AlertCircle,
+  Edit,
+  Trash2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FieldGrid } from '@/components/FieldGrid'
