@@ -513,35 +513,39 @@ export default function TeamsScreen() {
       {/* Bulk Add Players Modal */}
       {showBulkAdd && (
         <View style={styles.modal}>
-          <View style={[styles.modalContent, styles.bulkModalContent]}>
+          <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Adicionar Múltiplos Jogadores</Text>
             
-            <Text style={styles.instructionText}>
-              Digite um jogador por linha no formato:{'\n'}
-              Número,Nome,Posição,Função
-            </Text>
-            
-            <TextInput
-              style={[styles.input, styles.bulkTextArea]}
-              placeholder=""
-              value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
-              onChangeText={(text) => {
-                const lines = text.split('\n');
-                const players = lines.map(line => {
-                  const parts = line.split(',');
-                  return {
-                    number: parts[0] || '',
-                    name: parts[1] || '',
-                    position: parts[2] || '',
-                    role: parts[3] || ''
-                  };
-                });
-                setBulkPlayers(players);
-              }}
-              multiline
-              numberOfLines={15}
-              textAlignVertical="top"
-            />
+            <ScrollView style={styles.bulkAddScroll}>
+              <Text style={styles.instructionText}>
+                Digite os jogadores no formato: Número,Nome,Posição,Função{'\n'}
+                Um jogador por linha. Exemplo:{'\n'}
+                1,João Silva,Goleiro,Goleiro Tradicional{'\n'}
+                10,Pedro Santos,Meio-campista,Meia Armador
+              </Text>
+              
+              <TextInput
+                style={[styles.input, styles.bulkTextArea]}
+                placeholder="1,João Silva,Goleiro,Goleiro Tradicional&#10;10,Pedro Santos,Meio-campista,Meia Armador"
+                value={bulkPlayers.map(p => `${p.number},${p.name},${p.position},${p.role}`).join('\n')}
+                onChangeText={(text) => {
+                  const lines = text.split('\n');
+                  const players = lines.map(line => {
+                    const parts = line.split(',');
+                    return {
+                      number: parts[0] || '',
+                      name: parts[1] || '',
+                      position: parts[2] || '',
+                      role: parts[3] || ''
+                    };
+                  });
+                  setBulkPlayers(players);
+                }}
+                multiline
+                numberOfLines={10}
+                textAlignVertical="top"
+              />
+            </ScrollView>
 
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -750,9 +754,6 @@ const styles = StyleSheet.create({
     width: '90%',
     maxWidth: 400,
     maxHeight: '80%',
-  },
-  bulkModalContent: {
-    maxHeight: '90%',
   },
   modalTitle: {
     fontSize: 20,
