@@ -125,7 +125,7 @@ export function IOSFieldView() {
 
         {/* Indicador de Posse - Centro Superior */}
         {currentMatch.currentPossession && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
+          <div className="absolute top-3 left-1/2 transform -translate-x-1/2">
             <div className="bg-background/90 backdrop-blur-sm border border-border/50 rounded-2xl px-4 py-2 flex items-center space-x-2">
               <img 
                 src={currentMatch.currentPossession === currentMatch.teamA.id 
@@ -133,29 +133,23 @@ export function IOSFieldView() {
                   : currentMatch.teamB.logoUrl
                 } 
                 alt="Team logo"
-                className="w-6 h-6 object-contain"
+                className="w-5 h-5 object-contain"
               />
-              <span className="text-sm font-medium">
-                {currentMatch.currentPossession === currentMatch.teamA.id 
-                  ? currentMatch.teamA.name 
-                  : currentMatch.teamB.name
-                }
-              </span>
             </div>
           </div>
         )}
       </div>
 
       {/* Botões Laterais - Esquerda */}
-      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-40 flex flex-col space-y-3">
+      <div className="absolute left-4 top-1/2 transform -translate-y-1/2 translate-y-8 z-40 flex flex-col space-y-3">
         {/* Cronômetro */}
         <Button
           variant={activePanel === 'timer' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('timer')}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
         >
-          <Clock className="h-5 w-5" />
+          <Clock className="h-4 w-4" />
         </Button>
         
         {/* Posse de Bola */}
@@ -163,9 +157,9 @@ export function IOSFieldView() {
           variant={activePanel === 'possession' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('possession')}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
         >
-          <Users className="h-5 w-5" />
+          <Users className="h-4 w-4" />
         </Button>
         
         {/* Registro de Ação */}
@@ -173,21 +167,21 @@ export function IOSFieldView() {
           variant={activePanel === 'actions' ? 'default' : 'outline'}
           size="icon"
           onClick={() => openPanel('actions')}
-          className="h-12 w-12 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
+          className="h-10 w-10 rounded-full bg-background/90 backdrop-blur-sm border-border/50 touch-target shadow-lg"
         >
-          <Zap className="h-5 w-5" />
+          <Zap className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Painel Lateral Direito */}
       <div className={cn(
-        "fixed right-0 top-0 h-full w-80 bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
+        "fixed right-0 top-0 h-full w-72 sm:w-80 bg-background/95 backdrop-blur-md border-l border-border/50 transform transition-transform duration-300 z-30",
         showSidebar ? "translate-x-0" : "translate-x-full"
       )}>
         {/* Header do Painel */}
-        <div className="p-4 border-b border-border/50">
+        <div className="p-3 border-b border-border/50">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-base font-semibold">
               {activePanel === 'timer' && 'Cronômetro'}
               {activePanel === 'possession' && 'Posse de Bola'}
               {activePanel === 'actions' && 'Registrar Ação'}
@@ -199,7 +193,7 @@ export function IOSFieldView() {
                 setShowSidebar(false)
                 setActivePanel(null)
               }}
-              className="h-8 w-8 rounded-full"
+              className="h-7 w-7 rounded-full"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -207,11 +201,11 @@ export function IOSFieldView() {
         </div>
 
         {/* Conteúdo do Painel Ativo */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3">
           {activePanel === 'timer' && (
             <div className="space-y-4">
               <div className="text-center">
-                <div className="text-4xl font-mono font-bold mb-4">
+                <div className="text-2xl font-mono font-bold mb-3">
                   {formatTime(timer)}
                 </div>
                 
@@ -220,7 +214,7 @@ export function IOSFieldView() {
                     variant="outline"
                     size="icon"
                     onClick={togglePlayPause}
-                    className="h-12 w-12 rounded-full touch-target"
+                    className="h-10 w-10 rounded-full touch-target"
                   >
                     {currentMatch.isPlaying ? (
                       <Pause className="h-5 w-5" />
@@ -233,7 +227,7 @@ export function IOSFieldView() {
                     variant="outline"
                     size="icon"
                     onClick={resetTimer}
-                    className="h-12 w-12 rounded-full touch-target"
+                    className="h-10 w-10 rounded-full touch-target"
                   >
                     <RotateCcw className="h-5 w-5" />
                   </Button>
@@ -244,12 +238,12 @@ export function IOSFieldView() {
 
           {activePanel === 'possession' && (
             <div className="space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Button
                   variant="outline"
                   onClick={() => handlePossessionSelect(currentMatch.teamA.id)}
                   className={cn(
-                    "w-full h-20 flex items-center justify-center p-4 touch-target",
+                    "w-full h-16 flex items-center justify-center p-3 touch-target",
                     currentMatch.currentPossession === currentMatch.teamA.id && 
                     "ring-2 ring-primary bg-primary/10"
                   )}
@@ -257,7 +251,7 @@ export function IOSFieldView() {
                   <img 
                     src={currentMatch.teamA.logoUrl} 
                     alt={`${currentMatch.teamA.name} logo`}
-                    className="w-12 h-12 object-contain"
+                    className="w-10 h-10 object-contain"
                   />
                 </Button>
                 
@@ -265,7 +259,7 @@ export function IOSFieldView() {
                   variant="outline"
                   onClick={() => handlePossessionSelect(currentMatch.teamB.id)}
                   className={cn(
-                    "w-full h-20 flex items-center justify-center p-4 touch-target",
+                    "w-full h-16 flex items-center justify-center p-3 touch-target",
                     currentMatch.currentPossession === currentMatch.teamB.id && 
                     "ring-2 ring-primary bg-primary/10"
                   )}
@@ -273,7 +267,7 @@ export function IOSFieldView() {
                   <img 
                     src={currentMatch.teamB.logoUrl} 
                     alt={`${currentMatch.teamB.name} logo`}
-                    className="w-12 h-12 object-contain"
+                    className="w-10 h-10 object-contain"
                   />
                 </Button>
               </div>
@@ -286,7 +280,7 @@ export function IOSFieldView() {
                 <ActionPanel onClose={handleActionComplete} />
               ) : (
                 <div className="text-center py-8">
-                  <Target className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                  <Target className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
                   <p className="text-muted-foreground">
                     Selecione a posse de bola primeiro
                   </p>

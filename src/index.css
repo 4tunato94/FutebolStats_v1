@@ -95,6 +95,15 @@ input, select, textarea {
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
   }
+  
+  /* Notch safe areas for iPhone */
+  .notch-safe-left {
+    padding-left: max(env(safe-area-inset-left), 1rem);
+  }
+  
+  .notch-safe-right {
+    padding-right: max(env(safe-area-inset-right), 1rem);
+  }
 }
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 

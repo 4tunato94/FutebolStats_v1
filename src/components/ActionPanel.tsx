@@ -138,14 +138,14 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
                 variant="outline"
                 onClick={() => handleActionClick(actionType)}
                 className={cn(
-                  "h-24 rounded-2xl flex flex-col items-center justify-center p-4 touch-target no-select",
+                  "h-20 rounded-2xl flex flex-col items-center justify-center p-3 touch-target no-select",
                   "border-2 border-border/50 hover:border-primary/50",
                   "transition-all duration-200 active:scale-[0.95]",
                   "bg-card hover:bg-accent"
                 )}
               >
-                <span className="text-3xl mb-2">{actionType.icon}</span>
-                <span className="text-sm font-medium text-center leading-tight ios-text-wrap">
+                <span className="text-2xl mb-1">{actionType.icon}</span>
+                <span className="text-xs font-medium text-center leading-tight ios-text-wrap">
                   {actionType.name}
                 </span>
               </Button>
@@ -154,7 +154,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
         </div>
       ) : (
         <div className="text-center py-12">
-          <Target className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+          <Target className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
           <p className="text-base text-muted-foreground ios-text-wrap">
             Selecione a posse de bola para registrar ações
           </p>
