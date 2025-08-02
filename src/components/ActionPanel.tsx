@@ -77,7 +77,7 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
         type: 'specific',
         teamId: targetTeamId,
         playerId,
-        zone: { row: 7, col: 10 }, // Centro do campo por padrão
+        zone: { row: 6, col: 10 }, // Centro do campo por padrão (13/2 ≈ 6, 20/2 = 10)
         actionName: selectedAction.name
       })
 
