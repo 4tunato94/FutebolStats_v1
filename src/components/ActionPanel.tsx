@@ -126,6 +126,13 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
 
   const teamForPlayerSelection = getTeamForPlayerSelection()
 
+  // Função para formatar tempo
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
   return (
     <>
       <div className="space-y-4">
@@ -182,13 +189,6 @@ export function ActionPanel({ onClose }: ActionPanelProps) {
         </div>
       )}
       </div>
-
-  // Função para formatar tempo (adicionar se não existir)
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
 
       {/* Seletor de Jogador */}
       {selectedAction && teamForPlayerSelection && (
