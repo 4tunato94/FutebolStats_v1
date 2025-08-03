@@ -31,11 +31,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="teams"
+        name="game"
         options={{
-          title: 'Times',
+          title: 'Jogo',
           tabBarIcon: ({ color }) => (
-            <Text style={{ color, fontSize: 20 }}>👥</Text>
+            <Text style={{ color, fontSize: 20 }}>⚽</Text>
           ),
         }}
       />
