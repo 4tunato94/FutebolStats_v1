@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFutebolStore } from '../../stores/futebolStore';
 
 export default function HistoryScreen() {
-  const { currentMatch, updateAction, deleteAction } = useFutebolStore();
   const [editingAction, setEditingAction] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     action: '',
@@ -14,6 +12,9 @@ export default function HistoryScreen() {
     minute: '',
     second: ''
   });
+
+  // Temporary placeholder - no current match data
+  const currentMatch = null;
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', { 
