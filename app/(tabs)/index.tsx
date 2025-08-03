@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 interface Team {
   id: string;
@@ -36,14 +35,6 @@ export default function HomeScreen() {
 
   const deleteTeam = (id: string) => {
     setTeams(teams.filter(team => team.id !== id));
-  };
-
-  const startMatch = () => {
-    if (teams.length < 2) {
-      Alert.alert('Erro', 'É necessário pelo menos 2 times para iniciar uma partida');
-      return;
-    }
-    router.push('/game');
   };
 
   return (
@@ -89,9 +80,10 @@ export default function HomeScreen() {
         </View>
 
         {teams.length >= 2 && (
-          <TouchableOpacity style={styles.startButton} onPress={startMatch}>
-            <Text style={styles.startButtonText}>🚀 Iniciar Partida</Text>
-          </TouchableOpacity>
+          <View style={styles.startCard}>
+            <Text style={styles.startText}>Pronto para começar!</Text>
+            <Text style={styles.startSubtext}>Vá para a aba "Jogo" para iniciar a partida</Text>
+          </View>
         )}
       </ScrollView>
 
@@ -244,17 +236,23 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
   },
-  startButton: {
+  startCard: {
     backgroundColor: '#2d5016',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     marginTop: 20,
   },
-  startButtonText: {
+  startText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  startSubtext: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    textAlign: 'center',
   },
   modal: {
     position: 'absolute',
